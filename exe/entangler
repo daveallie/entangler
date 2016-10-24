@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+require "entangler"
+
+mode = ARGV[0]
+opts = {}
+
+raise 'Must supply at least 2 args' unless ARGV.length >= 2
+
+if mode == 'master'
+  raise 'Missing remote argument' unless ARGV.length >= 3
+  user, rest = ARGV[2].split('@', 2)
+  host, path = rest.split(':', 2)
+  opts = {remote_base_dir: path, remote_user: user, remote_host: host}
+  opts[:remote_port] = ARGV[3] if ARGV[3]
+elsif mode == 'slave'
+  opts[:mode] = 'slave'
+else
+  raise "Mode: #{mode} unknown, please read documentation"
+end
+
+Entangler.run(ARGV[1], opts)
