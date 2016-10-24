@@ -120,8 +120,14 @@ module Entangler
                 msg[:content].each do |base, changes|
                   possible_creation_dirs = changes[:dirs].clone
                   possible_creation_files = changes[:files].keys.clone
+                  full_base_path = generate_abs_path(base)
 
-                  Dir.entries(generate_abs_path(base)).each do |f|
+                  unless File.directory?(full_base_path)
+                    FileUtils::mkdir_p(full_base_path)
+                    @notify_sleep = Time.now.to_i + 60
+                  end
+
+                  Dir.entries(full_base_path).each do |f|
                     next if ['.', '..'].include? f
                     full_path = File.join(generate_abs_path(base), f)
                     if File.directory?(full_path)
