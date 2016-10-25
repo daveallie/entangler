@@ -14,6 +14,7 @@ module Entangler
       def initialize(base_dir, opts = {})
         @base_dir = File.realpath(File.expand_path(base_dir))
         @notify_sleep = 0
+        @exported_at = 0
         @opts = opts
         @opts[:ignore] = [/^\/\.git.*/, /^\/\.entangler.*/, /^\/\.idea.*/, /^\/log.*/, /^\/tmp.*/] unless @opts.has_key?(:ignore)
         validate_opts

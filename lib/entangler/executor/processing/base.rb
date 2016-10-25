@@ -84,7 +84,11 @@ module Entangler
           logger.debug("Got #{content.length} entangled files from remote")
           completed_files, updated_files = content.partition(&:done?)
 
-          completed_files.each(&:export)
+          if completed_files.any?
+            @exported_at = Time.now.to_f
+            @exported_folders = completed_files.map{|ef| "#{File.dirname(generate_abs_path(ef.path))}/" }.uniq
+            completed_files.each(&:export)
+          end
 
           updated_files = updated_files.find_all{|f| f.state != 1 || f.file_exists? }
           if updated_files.any?
@@ -94,8 +98,13 @@ module Entangler
         end
 
         def process_lines(lines)
-          to_process = lines.map do |line|
-            path = line[2..-1]
+          paths = lines.map{|line| line[2..-1] }
+
+          if @exported_at < Time.now.to_f && Time.now.to_f < @exported_at + 2
+            paths -= @exported_folders
+          end
+
+          to_process = paths.map do |path|
             stripped_path = strip_base_path(path)
             next unless @opts[:ignore].nil? || @opts[:ignore].none?{|i| stripped_path.match(i) }
             next unless File.directory?(path)
