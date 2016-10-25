@@ -76,8 +76,12 @@ module Entangler
           @consumer_thread = Thread.new do
             loop do
               msg = [@local_action_queue.pop]
-              while !@local_action_queue.empty?
-                msg << @local_action_queue.pop
+              loop do
+                sleep 0.2
+                break if @local_action_queue.empty?
+                while !@local_action_queue.empty?
+                  msg << @local_action_queue.pop
+                end
               end
               while Time.now.to_f <= @notify_sleep
                 sleep 0.5
