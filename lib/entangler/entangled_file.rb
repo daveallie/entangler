@@ -28,6 +28,23 @@ module Entangler
       File.exists?(full_path)
     end
 
+    def export
+      raise "Delta file doesn't exist when creaing patched file" unless delta_exists?
+      tempfile = Tempfile.new('final_file')
+      if File.exists?(full_path)
+        LibRubyDiff.patch(full_path, delta_file.path, tempfile.path)
+      else
+        temp_empty_file = Tempfile.new('empty_file')
+        LibRubyDiff.patch(temp_empty_file.path, delta_file.path, tempfile.path)
+      end
+      tempfile.rewind
+      File.open(full_path, 'w'){|f| f.write(tempfile.read)}
+      tempfile.close
+      tempfile.unlink
+      File.utime(File.atime(full_path), @desired_modtime, full_path)
+    end
+
+    private
     def signature_exists?
       defined?(@signature_tempfile)
     end
@@ -77,22 +94,6 @@ module Entangler
 
     def delta
       delta_file.read
-    end
-
-    def export
-      raise "Delta file doesn't exist when creaing patched file" unless delta_exists?
-      tempfile = Tempfile.new('final_file')
-      if File.exists?(full_path)
-        LibRubyDiff.patch(full_path, delta_file.path, tempfile.path)
-      else
-        temp_empty_file = Tempfile.new('empty_file')
-        LibRubyDiff.patch(temp_empty_file.path, delta_file.path, tempfile.path)
-      end
-      tempfile.rewind
-      File.open(full_path, 'w'){|f| f.write(tempfile.read)}
-      tempfile.close
-      tempfile.unlink
-      File.utime(File.atime(full_path), @desired_modtime, full_path)
     end
 
     def close_and_unlink_files

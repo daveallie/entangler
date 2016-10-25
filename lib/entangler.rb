@@ -1,5 +1,5 @@
-require 'entangler/version'
-require 'entangler/entangled_file'
+require_relative 'entangler/version'
+require_relative 'entangler/entangled_file'
 
 module Entangler
   class << self
