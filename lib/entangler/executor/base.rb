@@ -83,15 +83,15 @@ module Entangler
             while !@local_action_queue.empty?
               msg << @local_action_queue.pop
             end
-            while Time.now.to_i <= @notify_sleep
-              sleep 1
+            while Time.now.to_f <= @notify_sleep
+              sleep 0.5
               while !@local_action_queue.empty?
                 msg << @local_action_queue.pop
               end
             end
             process_lines(msg.uniq)
             msg = []
-            sleep 1
+            sleep 0.5
           end
         end
       end
@@ -165,7 +165,7 @@ module Entangler
                   logger.debug("Creating #{files_to_update.length} new entangled files to sync")
                   send_to_remote(type: :entangled_files, content: files_to_update.map{|f| Entangler::EntangledFile.new(f) })
                 end
-                @notify_sleep = Time.now.to_i + 1 if (files_to_remove + created_dirs + dirs_to_remove + files_to_update).any?
+                @notify_sleep = Time.now.to_f + 0.5 if (files_to_remove + created_dirs + dirs_to_remove + files_to_update).any?
                 @notify_sleep += 60 if files_to_update.any?
               when :entangled_files
                 logger.debug("Got #{msg[:content].length} entangled files from remote")
@@ -177,7 +177,7 @@ module Entangler
                 if updated_files.any?
                   send_to_remote(type: :entangled_files, content: updated_files)
                 end
-                @notify_sleep = Time.now.to_i + 1 if completed_files.any?
+                @notify_sleep = Time.now.to_f + 0.5 if completed_files.any?
               end
             end
           rescue => e
