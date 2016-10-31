@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require 'entangler'
 require 'optparse'
+require 'to_regexp'
 
 options = {}
 OptionParser.new do |opts|
@@ -71,11 +72,7 @@ end
 
 if options[:ignore]
   opts[:ignore] = options[:ignore].map do |opt|
-    if opt.start_with?('/') && opt.end_with?('/')
-      Regexp.new(opt[1..-2])
-    else
-      Regexp.new Regexp.quote(opt)
-    end
+    opt.to_regexp(detect: true)
   end
 end
 
