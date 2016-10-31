@@ -5,14 +5,17 @@ require 'to_regexp'
 
 options = {}
 OptionParser.new do |opts|
-  opts.banner = "Usage:\n   entangler master <base_dir> <remote_user>@<remote_host>:<remote_base_dir> [options]\n   entangler slave <base_dir> [options]"
+  opts.banner = %Q(Entangler v#{Entangler::VERSION}
+
+Usage:
+   entangler master <base_dir> <remote_user>@<remote_host>:<remote_base_dir> [options]
+   entangler slave <base_dir> [options])
 
   opts.separator ""
   opts.separator "Options:"
 
-  opts.on("-i", "--ignore folder1", "Ignore folder when syncing, string is regex if surrounded by '/'",
-          "Note that '\\' must be escaped, e.g. '/\\\\d+/' would match a digit string.",
-          "All folders should be relative to the base sync directory.") do |ignore|
+  opts.on("-i", "--ignore '/.git'", "Ignore folder when syncing, string is regex if surrounded by '/'",
+          "All folders should be relative to the base sync directory, but should start with a '/'.") do |ignore|
     options[:ignore] ||= []
     options[:ignore] << ignore
   end

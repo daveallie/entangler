@@ -15,20 +15,31 @@ $ gem install entangler
 
 ```shell
 entangler master /some/base/path user@remote:/some/remote/path
+```
 
+```
 entangler -h
+Entangler v0.3.0
+
 Usage:
    entangler master <base_dir> <remote_user>@<remote_host>:<remote_base_dir> [options]
    entangler slave <base_dir> [options]
 
 Options:
-    -i, --ignore folder1             Ignore folder when syncing, string is regex if surrounded by '/'
-                                     Note that '\' must be escaped, e.g. '/\\d+/' would match a digit string.
+    -i, --ignore '/.git'             Ignore folder when syncing, string is regex if surrounded by '/'
+                                     All folders should be relative to the base sync directory, but should start with a '/'.
     -p, --port PORT                  Overwrite the SSH port (usually 22)
                                      (doesn't do anything in slave mode)
     -v, --version                    Show version number
     -h, --help                       Show this message
 ```
+
+### Ignoring folders
+
+If you specify string, instead of regex, it will match any folder path starting with that string, i.e. `-i '/.git'` will ignore the `.git` folder and all its sub-directories.
+If you want to just ignore the the `.git` sub-directories but not the content in the git folder, you can use `-i '/^\/\.git\/[^\/]*/'` which will match any path starting with `/.git/`, but not `/.git` itself.
+
+You can specify multiple `-i` or `--ignore` flags to ignore multiple directories.
 
 ## Development
 
