@@ -16,7 +16,7 @@ module Entangler
         @notify_sleep = 0
         @exported_at = 0
         @opts = opts
-        @opts[:ignore] = [/^\/\.git.*/, /^\/\.entangler.*/, /^\/\.idea.*/, /^\/log.*/, /^\/tmp.*/] unless @opts.has_key?(:ignore)
+        @opts[:ignore] = [/^\/\.git.*/, /^\/\.entangler.*/] unless @opts.has_key?(:ignore)
         validate_opts
         logger.info("Starting executor")
       end
