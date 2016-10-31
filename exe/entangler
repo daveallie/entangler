@@ -9,6 +9,13 @@ OptionParser.new do |opts|
   opts.separator ""
   opts.separator "Options:"
 
+  opts.on("-i", "--ignore folder1", "Ignore folder when syncing, string is regex if surrounded by '/'",
+          "Note that '\\' must be escaped, e.g. '/\\\\d+/' would match a digit string.",
+          "All folders should be relative to the base sync directory.") do |ignore|
+    options[:ignore] ||= []
+    options[:ignore] << ignore
+  end
+
   opts.on("-p", "--port PORT", "Overwrite the SSH port (usually 22)", "(doesn't do anything in slave mode)") do |port|
     options[:port] = port
   end
@@ -60,6 +67,16 @@ if mode == 'master'
   opts[:remote_port] = options[:port] if options[:port]
 else
   opts = {mode: 'slave'}
+end
+
+if options[:ignore]
+  opts[:ignore] = options[:ignore].map do |opt|
+    if opt.start_with?('/') && opt.end_with?('/')
+      Regexp.new(opt[1..-2])
+    else
+      Regexp.new Regexp.quote(opt)
+    end
+  end
 end
 
 Entangler.run(base_dir, opts)
