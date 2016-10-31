@@ -21,7 +21,7 @@ module Entangler
         end
 
         def process_new_changes(content)
-          logger.debug("Got #{content.length} new folder changes from remote")
+          logger.debug("RECIEVING #{content.length} folder/s from remote:\n#{content.join("\n")}")
 
           created_dirs = []
           dirs_to_remove = []
@@ -65,15 +65,15 @@ module Entangler
           @notify_sleep = Time.now.to_i + 60 if (files_to_remove + created_dirs + dirs_to_remove + files_to_update).any?
 
           if files_to_remove.any?
-            logger.debug("Deleting #{files_to_remove.length} files")
+            logger.debug("DELETING #{files_to_remove.length} files")
             FileUtils.rm files_to_remove
           end
           if dirs_to_remove.any?
-            logger.debug("Deleting #{dirs_to_remove.length} dirs")
+            logger.debug("DELETING #{dirs_to_remove.length} dirs")
             FileUtils.rm_r dirs_to_remove
           end
           if files_to_update.any?
-            logger.debug("Creating #{files_to_update.length} new entangled files to sync")
+            logger.debug("CREATING #{files_to_update.length} new entangled file/s")
             send_to_remote(type: :entangled_files, content: files_to_update.map{|f| Entangler::EntangledFile.new(f) })
           end
           @notify_sleep = Time.now.to_f + 0.5 if (files_to_remove + created_dirs + dirs_to_remove + files_to_update).any?
@@ -81,7 +81,7 @@ module Entangler
         end
 
         def process_entangled_files(content)
-          logger.debug("Got #{content.length} entangled files from remote")
+          logger.debug("UPDATING #{content.length} entangled file/s from remote")
           completed_files, updated_files = content.partition(&:done?)
 
           if completed_files.any?
@@ -113,7 +113,7 @@ module Entangler
           end.compact.sort_by(&:first)
 
           return unless to_process.any?
-          logger.debug("PROCESSING #{to_process.count} folder/s")
+          logger.debug("PROCESSING #{to_process.count} folder/s:\n#{to_process.join("\n")}")
           send_to_remote(type: :new_changes, content: to_process)
         end
       end
