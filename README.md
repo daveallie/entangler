@@ -22,6 +22,8 @@ Usage:
    entangler slave <base_dir> [options]
 
 Options:
+    -i, --ignore folder1             Ignore folder when syncing, string is regex if surrounded by '/'
+                                     Note that '\' must be escaped, e.g. '/\\d+/' would match a digit string.
     -p, --port PORT                  Overwrite the SSH port (usually 22)
                                      (doesn't do anything in slave mode)
     -v, --version                    Show version number
