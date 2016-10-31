@@ -28,7 +28,13 @@ module Entangler
 
       def perform_initial_rsync
         logger.info 'Running initial sync'
-        IO.popen("rsync -azv --exclude .git --exclude log --exclude .entangler --exclude tmp -e \"ssh -p #{@opts[:remote_port]}\" --delete #{base_dir}/ #{@opts[:remote_user]}@#{@opts[:remote_host]}:#{@opts[:remote_base_dir]}/").each do |line|
+        all_folders = Dir.glob("#{base_dir}/**/*/", File::FNM_DOTMATCH).tap{|a| a.shift(1) }.find_all{|path| !path.end_with?("/./")}
+        all_ignore_matches = all_folders.map{|path| @opts[:ignore].map{|regexp| regexp.match("/#{path[0..-2]}")}.compact.first}.compact
+        exclude_folders = all_ignore_matches.map{|match| match[0]}.uniq.map{|path| path[1..-1]}
+        exclude_args = exclude_folders.map{|path| "--exclude #{path}"}.join(' ')
+        rsync_cmd = "rsync -azv #{exclude_args} -e \"ssh -p #{@opts[:remote_port]}\" --delete #{base_dir}/ #{@opts[:remote_user]}@#{@opts[:remote_host]}:#{@opts[:remote_base_dir]}/"
+
+        IO.popen(rsync_cmd).each do |line|
           logger.debug line.chomp
         end
         logger.debug 'Initial sync complete'
