@@ -1,15 +1,31 @@
 # Entangler
 
+Syncing tool used to keep a local and remote (over SSH) folder in sync.
 
+## Prerequisites
+  - librsync 2.x
 
 ## Installation
 
-    $ gem install entangler
+```
+$ gem install entangler
+```
 
 ## Usage
 
 ```shell
 entangler master /some/base/path user@remote:/some/remote/path
+
+entangler -h
+Usage:
+   entangler master <base_dir> <remote_user>@<remote_host>:<remote_base_dir> [options]
+   entangler slave <base_dir> [options]
+
+Options:
+    -p, --port PORT                  Overwrite the SSH port (usually 22)
+                                     (doesn't do anything in slave mode)
+    -v, --version                    Show version number
+    -h, --help                       Show this message
 ```
 
 ## Development
