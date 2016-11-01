@@ -27,6 +27,7 @@ module Entangler
           raise 'Remote base dir invalid' unless res.strip == 'ok'
         else
           @opts[:remote_base_dir] = File.realpath(File.expand_path(@opts[:remote_base_dir]))
+          raise "Destination directory can't be the same as the base directory" if @opts[:remote_base_dir] == self.base_dir
           raise "Destination directory doesn't exist" unless Dir.exists?(@opts[:remote_base_dir])
         end
       end
