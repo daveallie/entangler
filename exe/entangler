@@ -9,7 +9,7 @@ OptionParser.new do |opts|
 
 Usage:
    entangler master <base_dir> <remote_user>@<remote_host>:<remote_base_dir> [options]
-   entangler slave <base_dir> [options])
+   entangler master <base_dir> <other_synced_base_dir> [options])
 
   opts.separator ""
   opts.separator "Options:"
@@ -51,23 +51,31 @@ if mode == 'master'
   remote_information = ARGV.shift
 
   unless remote_information
-    raise 'Missing remote information'
+    raise 'Missing destination information'
     exit 1
   end
 
-  user, rest = remote_information.split('@', 2)
-  host, path = (rest || '').split(':', 2)
+  user = host = path = error = nil
+  remote_mode = false
+  if remote_information.match(/[^@]+@[^:]+:.+/)
+    remote_mode = true
+    user, rest = remote_information.split('@', 2)
+    host, path = (rest || '').split(':', 2)
 
-  error = nil
-  error = 'Missing remote user' unless user
-  error = 'Missing remote host' unless host
-  error = 'Missing remote path' unless path
+    error = 'Missing remote user' unless user
+    error = 'Missing remote host' unless host
+    error = 'Missing remote path' unless path
+  else
+    path = remote_information
+  end
+
   unless error.nil?
     puts error
     exit 1
   end
 
-  opts = {remote_base_dir: path, remote_user: user, remote_host: host}
+  opts = {remote_base_dir: path, remote_mode: remote_mode}
+  opts.merge!(remote_user: user, remote_host: host) if remote_mode
   opts[:remote_port] = options[:port] if options[:port]
 else
   opts = {mode: 'slave'}

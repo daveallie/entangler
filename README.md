@@ -19,11 +19,11 @@ entangler master /some/base/path user@remote:/some/remote/path
 
 ```
 entangler -h
-Entangler v0.3.0
+Entangler v0.3.1
 
 Usage:
    entangler master <base_dir> <remote_user>@<remote_host>:<remote_base_dir> [options]
-   entangler slave <base_dir> [options]
+   entangler master <base_dir> <other_synced_base_dir> [options]
 
 Options:
     -i, --ignore '/.git'             Ignore folder when syncing, string is regex if surrounded by '/'
