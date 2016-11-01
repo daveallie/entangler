@@ -21,7 +21,7 @@ module Entangler
         end
 
         def process_new_changes(content)
-          logger.debug("RECIEVING #{content.length} folder/s from remote:\n#{content.join("\n")}")
+          logger.debug("RECIEVING #{content.length} folder/s from remote:\n#{content.map{|c| "#{c[0][1..-1]}/"}.join("\n")}")
 
           created_dirs = []
           dirs_to_remove = []
@@ -113,7 +113,7 @@ module Entangler
           end.compact.sort_by(&:first)
 
           return unless to_process.any?
-          logger.debug("PROCESSING #{to_process.count} folder/s:\n#{to_process.join("\n")}")
+          logger.debug("PROCESSING #{to_process.count} folder/s:\n#{to_process.map{|c| "#{c[0][1..-1]}/"}.join("\n")}")
           send_to_remote(type: :new_changes, content: to_process)
         end
       end
