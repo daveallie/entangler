@@ -22,7 +22,7 @@ module Entangler
           raise 'Missing remote user' unless @opts.keys.include?(:remote_user)
           raise 'Missing remote host' unless @opts.keys.include?(:remote_host)
           @opts[:remote_port] ||= '22'
-          res = `ssh -q #{@opts[:remote_user]}@#{@opts[:remote_host]} -p #{@opts[:remote_port]} -C "[[ -d '#{@opts[:remote_base_dir]}' ]] && echo 'ok' || echo 'missing'"`
+          res = `#{generate_ssh_command("[[ -d '#{@opts[:remote_base_dir]}' ]] && echo 'ok' || echo 'missing'")}`
           raise 'Cannot connect to remote' if res.empty?
           raise 'Remote base dir invalid' unless res.strip == 'ok'
         else
@@ -34,9 +34,15 @@ module Entangler
 
       def perform_initial_rsync
         logger.info 'Running initial sync'
-        all_folders = Dir.glob("#{base_dir}/**/*/", File::FNM_DOTMATCH).tap{|a| a.shift(1) }.find_all{|path| !path.end_with?("/./")}
-        all_ignore_matches = all_folders.map{|path| @opts[:ignore].map{|regexp| regexp.match("/#{path[0..-2]}")}.compact.first}.compact
-        exclude_folders = all_ignore_matches.map{|match| match[0]}.uniq.map{|path| path[1..-1]}
+        local_folders = `find #{base_dir} -type d`.split("\n").tap{|a| a.shift(1) }.map{|path| path.sub(base_dir, '') }
+
+        remote_find_cmd = "find #{@opts[:remote_base_dir]} -type d"
+        raw_remote_folders = `#{@opts[:remote_mode] ? generate_ssh_command(remote_find_cmd) : remote_find_cmd}`
+        remote_folders = raw_remote_folders.split("\n").tap{|a| a.shift(1) }.map{|path| path.sub(@opts[:remote_base_dir], '') }
+
+        all_folders = remote_folders | local_folders
+        ignore_matches = all_folders.map{|path| @opts[:ignore].map{|regexp| (regexp.match(path) || [])[0]}.compact.first}.compact.uniq
+        exclude_folders = ignore_matches.map{|path| path[1..-1]}
         exclude_args = exclude_folders.map{|path| "--exclude #{path}"}.join(' ')
 
         ssh_settings = @opts[:remote_mode] ? "-e \"ssh -p #{@opts[:remote_port]}\"" : ''
@@ -48,6 +54,10 @@ module Entangler
           logger.debug line.chomp
         end
         logger.debug 'Initial sync complete'
+      end
+
+      def generate_ssh_command(cmd)
+        "ssh -q #{@opts[:remote_user]}@#{@opts[:remote_host]} -p #{@opts[:remote_port]} -C \"#{cmd}\""
       end
     end
   end
