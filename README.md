@@ -14,12 +14,12 @@ $ gem install entangler
 ## Usage
 
 ```shell
-entangler master /some/base/path user@remote:/some/remote/path
+$ entangler master /some/base/path user@remote:/some/remote/path
 ```
 
 ```
-entangler -h
-Entangler v0.4.0
+$ entangler -h
+Entangler v0.4.1
 
 Usage:
    entangler master <base_dir> <remote_user>@<remote_host>:<remote_base_dir> [options]
