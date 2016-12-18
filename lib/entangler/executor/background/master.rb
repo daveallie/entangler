@@ -7,7 +7,8 @@ module Entangler
           require 'open3'
           ignore_opts = @opts[:ignore].map{|regexp| "-i '#{regexp.inspect}'"}.join(' ')
           entangler_cmd = "entangler slave #{@opts[:remote_base_dir]} #{ignore_opts}"
-          full_cmd = generate_ssh_command("source ~/.rvm/environments/default && #{entangler_cmd}") : entangler_cmd
+          ssh_cmd = generate_ssh_command("source ~/.rvm/environments/default && #{entangler_cmd}")
+          full_cmd = @opts[:remote_mode] ? ssh_cmd : entangler_cmd
 
           @remote_writer, @remote_reader, remote_err, @remote_thread = Open3.popen3(full_cmd)
           remote_err.close
