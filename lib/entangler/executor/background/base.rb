@@ -33,15 +33,11 @@ module Entangler
         def start_remote_io
           logger.info('starting remote IO')
           @remote_io_thread = Thread.new do
-            begin
+            with_kill_threads_rescue do
               loop do
                 msg = Marshal.load(@remote_reader)
                 process_next_remote_line(msg)
               end
-            rescue => e
-              $stderr.puts e.message
-              $stderr.puts e.backtrace.join("\n")
-              kill_off_threads
             end
           end
         end
@@ -50,15 +46,11 @@ module Entangler
           logger.info('starting local IO')
           @local_action_queue = Queue.new
           @local_io_thread = Thread.new do
-            begin
+            with_kill_threads_rescue do
               loop do
                 ready = IO.select([@notify_reader]).first
                 break unless process_next_local_line(ready)
               end
-            rescue => e
-              $stderr.puts e.message
-              $stderr.puts e.backtrace.join("\n")
-              kill_off_threads
             end
           end
         end
@@ -127,6 +119,14 @@ module Entangler
           actions = []
           actions << @local_action_queue.pop until @local_action_queue.empty?
           actions
+        end
+
+        def with_kill_threads_rescue
+          yield
+        rescue => e
+          $stderr.puts e.message
+          $stderr.puts e.backtrace.join("\n")
+          kill_off_threads
         end
       end
     end

@@ -136,14 +136,12 @@ module Entangler
     def marshal_dump
       last_arg = nil
 
-      case @state
-      when 0
+      if @state.zero?
         last_arg = signature_file.read
-      when 1
+      elsif @state == 1
         @desired_modtime = File.mtime(full_path).to_i
         last_arg = delta_file.read
       end
-
       @state += 1 if @state < 2
 
       close_and_unlink_files

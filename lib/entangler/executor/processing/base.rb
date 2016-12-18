@@ -8,9 +8,7 @@ module Entangler
           dirs = []
           files = {}
 
-          Dir.entries(path).each do |f|
-            next if ['.', '..'].include? f
-            f_path = File.join(path, f)
+          each_entry(path) do |f, f_path|
             if File.directory? f_path
               dirs << f
             else
@@ -85,9 +83,7 @@ module Entangler
         def generate_actions(actions, base, changes)
           full_base_path = generate_abs_path(base)
 
-          Dir.entries(full_base_path).each do |f|
-            next if ['.', '..'].include? f
-            full_path = File.join(full_base_path, f)
+          each_entry(full_base_path) do |f, full_path|
             if File.directory?(full_path)
               generate_dir_actions(actions, changes, f, full_path)
             elsif changes[:files].key?(f)
@@ -184,6 +180,14 @@ module Entangler
         def log_folder_list(action, folders)
           folder_list = folders.map { |c| "#{c[0][1..-1]}/" }.join("\n")
           logger.debug("#{action} #{folder_list.length} folder/s from remote:\n#{folder_list}")
+        end
+
+        def each_entry(path)
+          Dir.entries(path).each do |f|
+            next if ['.', '..'].include? f
+            f_path = File.join(path, f)
+            yield(f, f_path)
+          end
         end
       end
     end
