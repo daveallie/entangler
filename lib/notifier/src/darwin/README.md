@@ -1,9 +1,10 @@
 The notify utility continiously prints changes in a specified directory in the following format:
 
+```
 M changed/path/1
 M changed/path/2
 -
-
+```
 
 Where M stands for "Modifed", and "-" is the indicator of end of changeset
 
