@@ -6,7 +6,7 @@ module Entangler
     attr_accessor :executor
 
     def run(base_dir, opts = {})
-      opts = {mode: 'master', remote_mode: true}.merge(opts)
+      opts = { mode: 'master', remote_mode: true }.merge(opts)
 
       require 'entangler/executor/base'
       if opts[:mode] == 'master'
@@ -17,7 +17,7 @@ module Entangler
         self.executor = Entangler::Executor::Slave.new(base_dir, opts)
       end
 
-      self.executor.run
+      executor.run
     end
   end
 end

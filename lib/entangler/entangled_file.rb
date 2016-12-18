@@ -25,26 +25,20 @@ module Entangler
     end
 
     def file_exists?
-      File.exists?(full_path)
+      File.exist?(full_path)
     end
 
     def export
       raise "Delta file doesn't exist when creaing patched file" unless delta_exists?
       tempfile = Tempfile.new('final_file')
-      if File.exists?(full_path)
-        LibRubyDiff.patch(full_path, delta_file.path, tempfile.path)
-      else
-        temp_empty_file = Tempfile.new('empty_file')
-        LibRubyDiff.patch(temp_empty_file.path, delta_file.path, tempfile.path)
-      end
-      tempfile.rewind
-      File.open(full_path, 'w'){|f| f.write(tempfile.read)}
-      tempfile.close
-      tempfile.unlink
+      lrd_patch(tempfile)
+      File.open(full_path, 'w') { |f| f.write(tempfile.read) }
+      close_and_unlink(tempfile)
       File.utime(File.atime(full_path), @desired_modtime, full_path)
     end
 
     private
+
     def signature_exists?
       defined?(@signature_tempfile)
     end
@@ -52,13 +46,7 @@ module Entangler
     def signature_file
       return @signature_tempfile if signature_exists?
       @signature_tempfile = Tempfile.new('sig_file')
-      if File.exists?(full_path)
-        LibRubyDiff.signature(full_path, @signature_tempfile.path)
-      else
-        temp_empty_file = Tempfile.new('empty_file')
-        LibRubyDiff.signature(temp_empty_file.path, @signature_tempfile.path)
-      end
-      @signature_tempfile.rewind
+      lrd_signature(@signature_tempfile)
       @signature_tempfile
     end
 
@@ -81,8 +69,7 @@ module Entangler
       raise "Signature file doesn't exist when creaing delta" unless signature_exists?
 
       @delta_tempfile = Tempfile.new('delta_file')
-      LibRubyDiff.delta(full_path, signature_file.path, @delta_tempfile.path)
-      @delta_tempfile.rewind
+      lrd_delta(@delta_tempfile)
       @delta_tempfile
     end
 
@@ -96,31 +83,66 @@ module Entangler
       delta_file.read
     end
 
+    def close_and_unlink(file)
+      file.close
+      file.unlink
+    end
+
     def close_and_unlink_files
       if signature_exists?
-        @signature_tempfile.close
-        @signature_tempfile.unlink
+        close_and_unlink @signature_tempfile
         @signature_tempfile = nil
       end
 
-      if delta_exists?
-        @delta_tempfile.close
-        @delta_tempfile.unlink
-        @delta_tempfile = nil
+      return unless delta_exists?
+      close_and_unlink @delta_tempfile
+      @delta_tempfile = nil
+    end
+
+    def with_empty_temp_file
+      temp_empty_file = Tempfile.new('empty_file')
+      yield temp_empty_file
+      temp_empty_file.close
+      temp_empty_file.unlink
+    end
+
+    def lrd_patch(output_file)
+      if File.exist?(full_path)
+        LibRubyDiff.patch(full_path, delta_file.path, output_file.path)
+      else
+        with_empty_temp_file do |temp_empty_file|
+          LibRubyDiff.patch(temp_empty_file.path, delta_file.path, output_file.path)
+        end
       end
+      output_file.rewind
+    end
+
+    def lrd_signature(output_file)
+      if File.exist?(full_path)
+        LibRubyDiff.signature(full_path, output_file.path)
+      else
+        with_empty_temp_file do |temp_empty_file|
+          LibRubyDiff.signature(temp_empty_file.path, output_file.path)
+        end
+      end
+      output_file.rewind
+    end
+
+    def lrd_delta(output_file)
+      LibRubyDiff.delta(full_path, signature_file.path, output_file.path)
+      output_file.rewind
     end
 
     def marshal_dump
       last_arg = nil
 
-      if @state == 0
+      if @state.zero?
         last_arg = signature_file.read
-        @state = 1
       elsif @state == 1
         @desired_modtime = File.mtime(full_path).to_i
         last_arg = delta_file.read
-        @state = 2
       end
+      @state += 1 if @state < 2
 
       close_and_unlink_files
 
