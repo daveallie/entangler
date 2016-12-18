@@ -48,7 +48,7 @@ module Entangler
           @local_io_thread = Thread.new do
             with_kill_threads_rescue do
               loop do
-                ready = IO.select([@notify_reader]).first
+                ready = IO.select([@notify_reader]).first || []
                 break unless process_next_local_line(ready)
               end
             end
@@ -79,7 +79,7 @@ module Entangler
 
         # returns false if processing should stop, true otherwise
         def process_next_local_line(ready)
-          return true unless ready && ready.any?
+          return true unless ready.any?
           return false if ready.first.eof?
           line = ready.first.gets
           return true if line.nil? || line.empty?
