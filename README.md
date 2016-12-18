@@ -1,5 +1,7 @@
 # Entangler
 
+[![Build Status](https://travis-ci.org/daveallie/entangler.svg?branch=master)](https://travis-ci.org/daveallie/entangler)
+
 Syncing tool used to keep a local and remote (over SSH) folder in sync.
 
 ## Prerequisites
