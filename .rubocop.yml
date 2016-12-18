@@ -5,11 +5,5 @@ AllCops:
 Metrics/LineLength:
   Max: 120
 
-Metrics/ClassLength:
-  Max: 200
-
-Metrics/ModuleLength:
-  Max: 200
-
 Style/Documentation:
   Enabled: false

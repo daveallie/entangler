@@ -1,8 +1,12 @@
 require 'lib_ruby_diff'
 require 'tempfile'
+require_relative 'entangled_file_components/lrd_logic'
+require_relative 'entangled_file_components/marshal_logic'
 
 module Entangler
   class EntangledFile
+    include Entangler::EntangledFileComponents::LRDLogic,
+            Entangler::EntangledFileComponents::MarshalLogic
     # 0: file initialized
     # 1: sig loaded
     # 2: delta loaded
@@ -50,12 +54,6 @@ module Entangler
       @signature_tempfile
     end
 
-    def write_signature(contents)
-      @signature_tempfile = Tempfile.new('sig_file')
-      @signature_tempfile.write(contents)
-      @signature_tempfile.rewind
-    end
-
     def signature
       signature_file.read
     end
@@ -71,12 +69,6 @@ module Entangler
       @delta_tempfile = Tempfile.new('delta_file')
       lrd_delta(@delta_tempfile)
       @delta_tempfile
-    end
-
-    def write_delta(contents)
-      @delta_tempfile = Tempfile.new('delta_file')
-      @delta_tempfile.write(contents)
-      @delta_tempfile.rewind
     end
 
     def delta
@@ -97,66 +89,6 @@ module Entangler
       return unless delta_exists?
       close_and_unlink @delta_tempfile
       @delta_tempfile = nil
-    end
-
-    def with_empty_temp_file
-      temp_empty_file = Tempfile.new('empty_file')
-      yield temp_empty_file
-      temp_empty_file.close
-      temp_empty_file.unlink
-    end
-
-    def lrd_patch(output_file)
-      if File.exist?(full_path)
-        LibRubyDiff.patch(full_path, delta_file.path, output_file.path)
-      else
-        with_empty_temp_file do |temp_empty_file|
-          LibRubyDiff.patch(temp_empty_file.path, delta_file.path, output_file.path)
-        end
-      end
-      output_file.rewind
-    end
-
-    def lrd_signature(output_file)
-      if File.exist?(full_path)
-        LibRubyDiff.signature(full_path, output_file.path)
-      else
-        with_empty_temp_file do |temp_empty_file|
-          LibRubyDiff.signature(temp_empty_file.path, output_file.path)
-        end
-      end
-      output_file.rewind
-    end
-
-    def lrd_delta(output_file)
-      LibRubyDiff.delta(full_path, signature_file.path, output_file.path)
-      output_file.rewind
-    end
-
-    def marshal_dump
-      last_arg = nil
-
-      if @state.zero?
-        last_arg = signature_file.read
-      elsif @state == 1
-        @desired_modtime = File.mtime(full_path).to_i
-        last_arg = delta_file.read
-      end
-      @state += 1 if @state < 2
-
-      close_and_unlink_files
-
-      [@path, @state, @desired_modtime, last_arg]
-    end
-
-    def marshal_load(array)
-      @path, @state, @desired_modtime, last_arg = *array
-
-      if @state == 1
-        write_signature(last_arg)
-      elsif @state == 2
-        write_delta(last_arg)
-      end
     end
   end
 end
