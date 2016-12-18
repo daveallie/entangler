@@ -36,14 +36,7 @@ module Entangler
             begin
               loop do
                 msg = Marshal.load(@remote_reader)
-                next if msg.nil?
-
-                case msg[:type]
-                when :new_changes
-                  process_new_changes(msg[:content])
-                when :entangled_files
-                  process_entangled_files(msg[:content])
-                end
+                process_next_remote_line(msg)
               end
             rescue => e
               $stderr.puts e.message
@@ -60,13 +53,7 @@ module Entangler
             begin
               loop do
                 ready = IO.select([@notify_reader]).first
-                next unless ready && ready.any?
-                break if ready.first.eof?
-                line = ready.first.gets
-                next if line.nil? || line.empty?
-                line = line.strip
-                next if line == '-'
-                @local_action_queue.push line
+                break unless process_next_local_line(ready)
               end
             rescue => e
               $stderr.puts e.message
@@ -79,18 +66,10 @@ module Entangler
         def start_local_consumer
           @consumer_thread = Thread.new do
             loop do
-              msg = [@local_action_queue.pop]
-              loop do
-                sleep 0.2
-                break if @local_action_queue.empty?
-                msg << @local_action_queue.pop until @local_action_queue.empty?
-              end
-              while Time.now.to_f <= @notify_sleep
-                sleep 0.5
-                msg << @local_action_queue.pop until @local_action_queue.empty?
-              end
-              process_lines(msg.uniq)
               msg = []
+              collect_local_actions_until_empty(msg)
+              collect_local_actions_until_can_notify(msg)
+              process_lines(msg.uniq)
               sleep 0.5
             end
           end
@@ -100,7 +79,54 @@ module Entangler
           uname = `uname`.strip.downcase
           raise 'Unsupported OS' unless %w(darwin linux).include?(uname)
 
-          "#{File.join(File.dirname(File.dirname(File.dirname(File.dirname(__FILE__)))), 'notifier', 'bin', uname, 'notify')} #{base_dir}"
+          lib_dir = File.dirname(File.dirname(File.dirname(File.dirname(__FILE__))))
+          "#{File.join(lib_dir, 'notifier', 'bin', uname, 'notify')} #{base_dir}"
+        end
+
+        private
+
+        # returns false if processing should stop, true otherwise
+        def process_next_local_line(ready)
+          return true unless ready && ready.any?
+          return false if ready.first.eof?
+          line = ready.first.gets
+          return true if line.nil? || line.empty?
+          line = line.strip
+          return true if line == '-'
+          @local_action_queue.push line
+          true
+        end
+
+        def process_next_remote_line(msg)
+          return if msg.nil?
+
+          case msg[:type]
+          when :new_changes
+            process_new_changes(msg[:content])
+          when :entangled_files
+            process_entangled_files(msg[:content])
+          end
+        end
+
+        def collect_local_actions_until_empty(msgs)
+          loop do
+            msgs += all_local_actions
+            sleep 0.2
+            break if @local_action_queue.empty?
+          end
+        end
+
+        def collect_local_actions_until_can_notify(msgs)
+          while Time.now.to_f <= @notify_sleep
+            sleep 0.5
+            msgs += all_local_actions
+          end
+        end
+
+        def all_local_actions
+          actions = []
+          actions << @local_action_queue.pop until @local_action_queue.empty?
+          actions
         end
       end
     end

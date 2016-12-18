@@ -22,100 +22,168 @@ module Entangler
         end
 
         def process_new_changes(content)
-          logger.debug("RECIEVING #{content.length} folder/s from remote:\n#{content.map { |c| "#{c[0][1..-1]}/" }.join("\n")}")
+          log_folder_list('RECIEVING', content)
 
-          created_dirs = []
-          dirs_to_remove = []
-          files_to_remove = []
-          files_to_update = []
-
+          actions = initialize_actions
           content.each do |base, changes|
-            possible_creation_dirs = changes[:dirs].clone
-            possible_creation_files = changes[:files].keys.clone
-            full_base_path = generate_abs_path(base)
-
-            unless File.directory?(full_base_path)
-              FileUtils.mkdir_p(full_base_path)
-              @notify_sleep = Time.now.to_i + 60
-            end
-
-            Dir.entries(full_base_path).each do |f|
-              next if ['.', '..'].include? f
-              full_path = File.join(generate_abs_path(base), f)
-              if File.directory?(full_path)
-                possible_creation_dirs -= [f]
-                dirs_to_remove << full_path unless changes[:dirs].include?(f)
-              elsif changes[:files].key?(f)
-                possible_creation_files -= [f]
-                files_to_update << File.join(base, f) unless changes[:files][f] == [File.size(full_path), File.mtime(full_path).to_i]
-              else
-                files_to_remove << full_path
-              end
-            end
-
-            dirs_to_create = possible_creation_dirs.map { |d| File.join(generate_abs_path(base), d) }
-            if dirs_to_create.any?
-              logger.debug("Creating #{dirs_to_create.length} dirs")
-              @notify_sleep = Time.now.to_i + 60
-              FileUtils.mkdir_p dirs_to_create
-            end
-            created_dirs += dirs_to_create
-            files_to_update += possible_creation_files.map { |f| File.join(base, f) }
+            process_changes_list(actions, base, changes)
           end
+          process_finalised_actions(actions)
 
-          @notify_sleep = Time.now.to_i + 60 if (files_to_remove + created_dirs + dirs_to_remove + files_to_update).any?
-
-          if files_to_remove.any?
-            logger.debug("DELETING #{files_to_remove.length} files")
-            FileUtils.rm files_to_remove
-          end
-          if dirs_to_remove.any?
-            logger.debug("DELETING #{dirs_to_remove.length} dirs")
-            FileUtils.rm_r dirs_to_remove
-          end
-          if files_to_update.any?
-            logger.debug("CREATING #{files_to_update.length} new entangled file/s")
-            send_to_remote(type: :entangled_files, content: files_to_update.map { |f| Entangler::EntangledFile.new(f) })
-          end
-          @notify_sleep = Time.now.to_f + 0.5 if (files_to_remove + created_dirs + dirs_to_remove + files_to_update).any?
-          @notify_sleep += 60 if files_to_update.any?
+          # Keep waiting until the remote returns if there are files being updated
+          @notify_sleep = Time.now.to_f + 0.5 unless actions[:update_files].any?
         end
 
         def process_entangled_files(content)
           logger.debug("UPDATING #{content.length} entangled file/s from remote")
           completed_files, updated_files = content.partition(&:done?)
 
-          if completed_files.any?
-            @exported_at = Time.now.to_f
-            @exported_folders = completed_files.map { |ef| "#{File.dirname(generate_abs_path(ef.path))}/" }.uniq
-            completed_files.each(&:export)
-          end
-
-          updated_files = updated_files.find_all { |f| f.state != 1 || f.file_exists? }
-          if updated_files.any?
-            send_to_remote(type: :entangled_files, content: updated_files)
-          end
+          export_entangled_files(completed_files)
+          update_entangled_files(updated_files)
           @notify_sleep = Time.now.to_f + 0.5 if completed_files.any?
         end
 
         def process_lines(lines)
-          paths = lines.map { |line| line[2..-1] }
+          paths = remove_recently_exported_paths(lines.map { |line| line[2..-1] })
+          to_process = paths_to_process(paths)
 
-          if @exported_at < Time.now.to_f && Time.now.to_f < @exported_at + 2
-            paths -= @exported_folders
+          return unless to_process.any?
+          log_folder_list('PROCESSING', to_process)
+          send_to_remote(type: :new_changes, content: to_process)
+        end
+
+        private
+
+        def initialize_actions
+          {
+            created_dirs: [],
+            remove_dirs: [],
+            remove_files: [],
+            update_files: []
+          }
+        end
+
+        def num_actions_to_process(actions)
+          (actions[:remove_files] + actions[:remove_dirs] + actions[:update_files]).length
+        end
+
+        def process_changes_list(actions, base, changes)
+          actions[:create_dirs] = changes[:dirs].clone
+          actions[:create_files] = changes[:files].keys.clone
+
+          create_dir_if_required(generate_abs_path(base))
+          generate_actions(actions, base, changes)
+          process_create_dirs_and_files(actions, base)
+        end
+
+        def create_dir_if_required(full_base_path)
+          return if File.directory?(full_base_path)
+          FileUtils.mkdir_p(full_base_path)
+          @notify_sleep = Time.now.to_i + 60
+        end
+
+        def generate_actions(actions, base, changes)
+          full_base_path = generate_abs_path(base)
+
+          Dir.entries(full_base_path).each do |f|
+            next if ['.', '..'].include? f
+            full_path = File.join(full_base_path, f)
+            if File.directory?(full_path)
+              generate_dir_actions(actions, changes, f, full_path)
+            elsif changes[:files].key?(f)
+              generate_file_actions(actions, changes, f, full_path)
+            else
+              actions[:remove_files] << full_path
+            end
           end
+        end
 
-          to_process = paths.map do |path|
+        def process_create_dirs_and_files(actions, base)
+          @notify_sleep = Time.now.to_i + 60 if actions[:create_dirs].any?
+          process_create_dirs(actions)
+          actions[:update_files] += actions[:create_files].map { |f| File.join(base, f) }
+        end
+
+        def generate_dir_actions(actions, changes, f, full_path)
+          actions[:create_dirs] -= [f]
+          return if changes[:dirs].include?(f)
+          actions[:remove_dirs] << full_path
+        end
+
+        def generate_file_actions(actions, changes, f, full_path)
+          actions[:create_files] -= [f]
+          path_mod_time = [File.size(full_path), File.mtime(full_path).to_i]
+          return if changes[:files][f] == path_mod_time
+          actions[:update_files] << File.join(base, f)
+        end
+
+        def process_finalised_actions(actions)
+          return unless num_actions_to_process(actions) > 0
+          # Prevent other tasks from running while we're updating
+          @notify_sleep = Time.now.to_i + 60
+          process_remove_files(actions)
+          process_remove_dirs(actions)
+          process_update_files(actions)
+        end
+
+        def process_create_dirs(actions)
+          return unless actions[:create_dirs].any?
+          full_path = generate_abs_path(base)
+          dirs_to_create = actions[:create_dirs].map { |d| File.join(full_path, d) }
+          logger.debug("Creating #{dirs_to_create.length} dirs")
+          FileUtils.mkdir_p dirs_to_create
+          actions[:created_dir] += dirs_to_create
+        end
+
+        def process_remove_files(actions)
+          return unless actions[:remove_files].any?
+          logger.debug("DELETING #{actions[:remove_files].length} files")
+          FileUtils.rm actions[:remove_files]
+        end
+
+        def process_remove_dirs(actions)
+          return unless actions[:remove_dirs].any?
+          logger.debug("DELETING #{actions[:remove_dirs].length} dirs")
+          FileUtils.rm_r actions[:remove_dirs]
+        end
+
+        def process_update_files(actions)
+          return unless actions[:update_files].any?
+          logger.debug("CREATING #{actions[:update_files].length} new entangled file/s")
+          entangled_files = actions[:update_files].map { |f| Entangler::EntangledFile.new(f) }
+          send_to_remote(type: :entangled_files, content: entangled_files)
+        end
+
+        def export_entangled_files(files)
+          return unless files.any?
+          @exported_at = Time.now.to_f
+          @exported_folders = files.map { |ef| "#{File.dirname(generate_abs_path(ef.path))}/" }.uniq
+          files.each(&:export)
+        end
+
+        def update_entangled_files(files)
+          files.select! { |f| f.state != 1 || f.file_exists? }
+          send_to_remote(type: :entangled_files, content: files) if files.any?
+        end
+
+        def remove_recently_exported_paths(paths)
+          return paths if @exported_at + 2 < Time.now.to_f
+          paths - @exported_folders
+        end
+
+        def paths_to_process(paths)
+          paths.map do |path|
             stripped_path = strip_base_path(path)
-            next unless @opts[:ignore].nil? || @opts[:ignore].none? { |i| stripped_path.match(i) }
             next unless File.directory?(path)
+            next unless @opts[:ignore].nil? || @opts[:ignore].none? { |i| stripped_path.match(i) }
 
             [stripped_path, generate_file_list(path)]
           end.compact.sort_by(&:first)
+        end
 
-          return unless to_process.any?
-          logger.debug("PROCESSING #{to_process.count} folder/s:\n#{to_process.map { |c| "#{c[0][1..-1]}/" }.join("\n")}")
-          send_to_remote(type: :new_changes, content: to_process)
+        def log_folder_list(action, folders)
+          folder_list = folders.map { |c| "#{c[0][1..-1]}/" }.join("\n")
+          logger.debug("#{action} #{folder_list.length} folder/s from remote:\n#{folder_list}")
         end
       end
     end
