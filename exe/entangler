@@ -50,10 +50,7 @@ end
 if mode == 'master'
   remote_information = ARGV.shift
 
-  unless remote_information
-    raise 'Missing destination information'
-    exit 1
-  end
+  raise 'Missing destination information' unless remote_information
 
   user = host = path = error = nil
   remote_mode = false

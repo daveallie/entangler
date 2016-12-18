@@ -6,16 +6,6 @@
 # Note that changes in the inspected code, or installation of new
 # versions of RuboCop, may require this file to be generated again.
 
-# Offense count: 1
-Lint/UnreachableCode:
-  Exclude:
-    - 'exe/entangler'
-
-# Offense count: 1
-Lint/UselessAssignment:
-  Exclude:
-    - 'lib/entangler/executor/background/base.rb'
-
 # Offense count: 9
 Metrics/AbcSize:
   Max: 89
@@ -62,26 +52,3 @@ Style/Documentation:
     - 'lib/entangler/executor/master.rb'
     - 'lib/entangler/executor/processing/base.rb'
     - 'lib/entangler/executor/slave.rb'
-
-# Offense count: 1
-# Configuration parameters: MinBodyLength.
-Style/GuardClause:
-  Exclude:
-    - 'lib/entangler/entangled_file.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: AutoCorrect, EnforcedStyle, SupportedStyles.
-# SupportedStyles: predicate, comparison
-Style/NumericPredicate:
-  Exclude:
-    - 'spec/**/*'
-    - 'lib/entangler/entangled_file.rb'
-
-# Offense count: 2
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles, AllowInnerSlashes.
-# SupportedStyles: slashes, percent_r, mixed
-Style/RegexpLiteral:
-  Exclude:
-    - 'lib/entangler/executor/base.rb'

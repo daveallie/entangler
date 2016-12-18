@@ -104,24 +104,24 @@ module Entangler
         @signature_tempfile = nil
       end
 
-      if delta_exists?
-        @delta_tempfile.close
-        @delta_tempfile.unlink
-        @delta_tempfile = nil
-      end
+      return unless delta_exists?
+      @delta_tempfile.close
+      @delta_tempfile.unlink
+      @delta_tempfile = nil
     end
 
     def marshal_dump
       last_arg = nil
 
-      if @state == 0
+      case @state
+      when 0
         last_arg = signature_file.read
-        @state = 1
-      elsif @state == 1
+      when 1
         @desired_modtime = File.mtime(full_path).to_i
         last_arg = delta_file.read
-        @state = 2
       end
+
+      @state += 1 if @state < 2
 
       close_and_unlink_files
 

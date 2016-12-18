@@ -58,7 +58,6 @@ module Entangler
           @local_action_queue = Queue.new
           @local_io_thread = Thread.new do
             begin
-              msg = []
               loop do
                 ready = IO.select([@notify_reader]).first
                 next unless ready && ready.any?
