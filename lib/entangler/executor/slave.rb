@@ -10,7 +10,7 @@ module Entangler
 
         @remote_reader = STDIN
         @remote_writer = STDOUT
-        $stderr.reopen(File.join(log_dir, 'entangler.err'), "w")
+        $stderr.reopen(File.join(log_dir, 'entangler.err'), 'w')
       end
     end
   end

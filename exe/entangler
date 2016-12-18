@@ -5,45 +5,45 @@ require 'to_regexp'
 
 options = {}
 OptionParser.new do |opts|
-  opts.banner = %Q(Entangler v#{Entangler::VERSION}
+  opts.banner = %(Entangler v#{Entangler::VERSION}
 
 Usage:
    entangler master <base_dir> <remote_user>@<remote_host>:<remote_base_dir> [options]
    entangler master <base_dir> <other_synced_base_dir> [options])
 
-  opts.separator ""
-  opts.separator "Options:"
+  opts.separator ''
+  opts.separator 'Options:'
 
-  opts.on("-i", "--ignore '/.git'", "Ignore folder when syncing, string is regex if surrounded by '/'",
+  opts.on('-i', "--ignore '/.git'", "Ignore folder when syncing, string is regex if surrounded by '/'",
           "All folders should be relative to the base sync directory, but should start with a '/'.") do |ignore|
     options[:ignore] ||= []
     options[:ignore] << ignore
   end
 
-  opts.on("-p", "--port PORT", "Overwrite the SSH port (usually 22)", "(doesn't do anything in slave mode)") do |port|
+  opts.on('-p', '--port PORT', 'Overwrite the SSH port (usually 22)', "(doesn't do anything in slave mode)") do |port|
     options[:port] = port
   end
 
-  opts.on_tail("-v", "--version", "Show version number") do |v|
+  opts.on_tail('-v', '--version', 'Show version number') do |_v|
     puts Entangler::VERSION
     exit
   end
 
-  opts.on_tail("-h", "--help", "Show this message") do
+  opts.on_tail('-h', '--help', 'Show this message') do
     puts opts
     exit
   end
 end.parse!
 
 mode = ARGV.shift
-unless mode && ['master', 'slave'].include?(mode)
+unless mode && %w(master slave).include?(mode)
   puts "Mode unknown, please read help:\nentangler -h"
   exit 1
 end
 
 base_dir = ARGV.shift
 unless base_dir
-  puts "Missing base directory"
+  puts 'Missing base directory'
   exit 1
 end
 
@@ -57,7 +57,7 @@ if mode == 'master'
 
   user = host = path = error = nil
   remote_mode = false
-  if remote_information.match(/[^@]+@[^:]+:.+/)
+  if remote_information =~ /[^@]+@[^:]+:.+/
     remote_mode = true
     user, rest = remote_information.split('@', 2)
     host, path = (rest || '').split(':', 2)
@@ -74,11 +74,14 @@ if mode == 'master'
     exit 1
   end
 
-  opts = {remote_base_dir: path, remote_mode: remote_mode}
-  opts.merge!(remote_user: user, remote_host: host) if remote_mode
+  opts = { remote_base_dir: path, remote_mode: remote_mode }
+  if remote_mode
+    opts[:remote_user] = user
+    opts[:remote_host] = host
+  end
   opts[:remote_port] = options[:port] if options[:port]
 else
-  opts = {mode: 'slave'}
+  opts = { mode: 'slave' }
 end
 
 if options[:ignore]

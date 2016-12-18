@@ -3,6 +3,7 @@ module Entangler
     module Background
       module Base
         protected
+
         def wait_for_threads
           @consumer_thread.join
           @remote_io_thread.join
@@ -11,7 +12,11 @@ module Entangler
         end
 
         def kill_off_threads
-          Process.kill("TERM", @notify_daemon_pid) rescue nil
+          begin
+            Process.kill('TERM', @notify_daemon_pid)
+          rescue
+            nil
+          end
           @consumer_thread.terminate
           @remote_io_thread.terminate
           @local_io_thread.terminate
@@ -19,7 +24,7 @@ module Entangler
 
         def start_notify_daemon
           logger.info('starting notify daemon')
-          r,w = IO.pipe
+          r, w = IO.pipe
           @notify_daemon_pid = spawn(start_notify_daemon_cmd, out: w)
           w.close
           @notify_reader = r
@@ -79,15 +84,11 @@ module Entangler
               loop do
                 sleep 0.2
                 break if @local_action_queue.empty?
-                while !@local_action_queue.empty?
-                  msg << @local_action_queue.pop
-                end
+                msg << @local_action_queue.pop until @local_action_queue.empty?
               end
               while Time.now.to_f <= @notify_sleep
                 sleep 0.5
-                while !@local_action_queue.empty?
-                  msg << @local_action_queue.pop
-                end
+                msg << @local_action_queue.pop until @local_action_queue.empty?
               end
               process_lines(msg.uniq)
               msg = []
@@ -98,9 +99,9 @@ module Entangler
 
         def start_notify_daemon_cmd
           uname = `uname`.strip.downcase
-          raise 'Unsupported OS' unless ['darwin', 'linux'].include?(uname)
+          raise 'Unsupported OS' unless %w(darwin linux).include?(uname)
 
-          "#{File.join(File.dirname(File.dirname(File.dirname(File.dirname(__FILE__)))), 'notifier', 'bin', uname, 'notify')} #{self.base_dir}"
+          "#{File.join(File.dirname(File.dirname(File.dirname(File.dirname(__FILE__)))), 'notifier', 'bin', uname, 'notify')} #{base_dir}"
         end
       end
     end
