@@ -37,9 +37,20 @@ module Entangler
         raise 'Missing remote base dir' unless keys.include?(:remote_base_dir)
         raise 'Missing remote user' unless keys.include?(:remote_user)
         raise 'Missing remote host' unless keys.include?(:remote_host)
+        validate_remote_base_dir
+        validate_remote_entangler_version
+      end
+
+      def validate_remote_base_dir
         res = `#{generate_ssh_command("[[ -d '#{@opts[:remote_base_dir]}' ]] && echo 'ok' || echo 'missing'")}`
         raise 'Cannot connect to remote' if res.empty?
         raise 'Remote base dir invalid' unless res.strip == 'ok'
+      end
+
+      def validate_remote_entangler_version
+        return unless @opts[:remote_mode]
+        res = `#{generate_ssh_command('source ~/.rvm/environments/default && entangler --version')}`
+        raise 'Remote Entangler version too outdated' unless Gem::Version.new('1') <= Gem::Version.new(res.strip)
       end
 
       def perform_initial_rsync
