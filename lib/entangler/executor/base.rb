@@ -12,8 +12,7 @@ module Entangler
 
       def initialize(base_dir, opts = {})
         @base_dir = File.realpath(File.expand_path(base_dir))
-        @last_changed_at = 0
-        @changed_files = []
+        @recently_received_paths = []
         @listener_pauses = [false, false]
         @opts = opts
         @opts[:ignore] = [/^\.git.*/] unless @opts.key?(:ignore)

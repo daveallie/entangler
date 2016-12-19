@@ -62,14 +62,13 @@ module Entangler
 
       def process_raw_file_list(output, base)
         output.split("\n").tap { |a| a.shift(1) }
-              .map { |path| path.sub(base, '') }
+              .map { |path| path.sub("#{base}/", '') }
       end
 
       def find_rsync_ignore_folders
-        ignore_matches = find_all_folders.map do |path|
+        find_all_folders.map do |path|
           @opts[:ignore].map { |regexp| (regexp.match(path) || [])[0] }.compact.first
         end.compact.uniq
-        ignore_matches.map { |path| path[1..-1] }
       end
 
       def generate_ssh_command(cmd)

@@ -55,22 +55,41 @@ module Entangler
         end
 
         def remove_recently_changed_files(entangled_files)
-          return entangled_files if @last_changed_at + 2 < Time.now.to_f
-          entangled_files.find_all { |ef| @changed_files.include?(ef.path) }
+          @recently_received_paths.select! { |_, time| Time.now.to_f < time + 0.5 }
+          paths = @recently_received_paths.map(&:first)
+          entangled_files.reject { |ef| paths.include?(ef.path) }
         end
 
         def process_local_changes(changes)
           with_listener_pause(0) do
             changes = remove_recently_changed_files(changes)
-            send_to_remote(changes) if changes.any?
+            if changes.any?
+              logger.info("PROCESSING #{changes.length} local changes")
+              logger.debug(changes.map(&:path).join("\n"))
+              send_to_remote(changes)
+            end
           end
         end
 
         def process_remote_changes(changes)
-          return if changes.nil?
-          changes.each(&:process)
-          @last_changed_at = Time.now.to_f
-          @changed_files = changes.map(&:path)
+          with_listener_pause(1) do
+            return if changes.nil?
+            logger.info("PROCESSING #{changes.length} remote changes")
+            logger.debug(changes.map(&:path).join("\n"))
+            changes.each(&:process)
+            update_recently_received_paths(changes)
+          end
+        end
+
+        def update_recently_received_paths(changes)
+          changes.each do |change|
+            index = @recently_received_paths.index { |path, _| path == change.path }
+            if index.nil?
+              @recently_received_paths << [change.path, Time.now.to_f]
+            else
+              @recently_received_paths[index][1] = Time.now.to_f
+            end
+          end
         end
 
         def with_kill_threads_rescue

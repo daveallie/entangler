@@ -45,12 +45,13 @@ module Entangler
     end
 
     def write_contents
+      delete_file if file_exists? && File.directory?(full_path)
       File.open(full_path, 'w') { |f| f.write(contents) }
       File.utime(File.atime(full_path), desired_modtime, full_path)
     end
 
     def delete_file
-      FileUtils.rm(full_path) if file_exists?
+      FileUtils.rm_rf(full_path) if file_exists?
     end
 
     def marshal_dump
