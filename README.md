@@ -4,9 +4,6 @@
 
 Syncing tool used to keep a local and remote (over SSH) folder in sync.
 
-## Prerequisites
-  - librsync 2.x
-
 ## Installation
 
 ```
@@ -21,27 +18,29 @@ $ entangler master /some/base/path user@remote:/some/remote/path
 
 ```
 $ entangler -h
-Entangler v0.4.1
+Entangler v1.0.0
 
 Usage:
    entangler master <base_dir> <remote_user>@<remote_host>:<remote_base_dir> [options]
    entangler master <base_dir> <other_synced_base_dir> [options]
 
 Options:
-    -i, --ignore '/.git'             Ignore folder when syncing, string is regex if surrounded by '/'
-                                     All folders should be relative to the base sync directory, but should start with a '/'.
+    -i, --ignore '.git'              Ignore path when syncing, string is regex if surrounded by '/'
+                                     All paths should be relative to the base sync directory.
     -p, --port PORT                  Overwrite the SSH port (usually 22)
                                      (doesn't do anything in slave mode)
-    -v, --version                    Show version number
+    -v, --verbose                    Log Debug lines
+        --version                    Show version number
     -h, --help                       Show this message
 ```
 
-### Ignoring folders
+### Ignoring files and folders
 
-If you specify string, instead of regex, it will match any folder path starting with that string, i.e. `-i '/.git'` will ignore the `.git` folder and all its sub-directories.
-If you want to just ignore the the `.git` sub-directories but not the content in the git folder, you can use `-i '/^\/\.git\/[^\/]*/'` which will match any path starting with `/.git/`, but not `/.git` itself.
+If you specify a string, instead of a regex, it will match any path starting with that string, i.e. `-i '.git'` will ignore the `.git` 
+folder and all its sub-directories. If you want to just ignore the the `.git` sub-directories but not the content in the git folder, you'll 
+have to use regex. `-i '/^\.git\/[^\/]+\/.*/'` will match all sub-directories of `.git/`, but not the files in `.git`.
 
-You can specify multiple `-i` or `--ignore` flags to ignore multiple directories.
+You can specify multiple `-i` or `--ignore` flags to ignore multiple paths.
 
 ## Development
 
@@ -52,7 +51,6 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/daveallie/entangler. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
-
 
 ## License
 
