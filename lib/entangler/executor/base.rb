@@ -16,8 +16,8 @@ module Entangler
         @changed_files = []
         @listener_pauses = [false, false]
         @opts = opts
-        @opts[:ignore] = [%r{^\.git.*}] unless @opts.key?(:ignore)
-        @opts[:ignore] << %r{^\.entangler.*}
+        @opts[:ignore] = [/^\.git.*/] unless @opts.key?(:ignore)
+        @opts[:ignore] << /^\.entangler.*/
 
         validate_opts
         logger.info('Starting executor')

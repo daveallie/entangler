@@ -15,7 +15,7 @@ Usage:
   opts.separator 'Options:'
 
   opts.on('-i', "--ignore '.git'", "Ignore path when syncing, string is regex if surrounded by '/'",
-          "All paths should be relative to the base sync directory.") do |ignore|
+          'All paths should be relative to the base sync directory.') do |ignore|
     options[:ignore] ||= []
     options[:ignore] << ignore
   end
