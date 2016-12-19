@@ -12,12 +12,12 @@ module Entangler
 
       def initialize(base_dir, opts = {})
         @base_dir = File.realpath(File.expand_path(base_dir))
-        @notify_sleep = 0
-        @exported_at = 0
+        @last_changed_at = 0
+        @changed_files = []
         @listener_pauses = [false, false]
         @opts = opts
-        @opts[:ignore] = [%r{^/\.git.*}] unless @opts.key?(:ignore)
-        @opts[:ignore] << %r{^/\.entangler.*}
+        @opts[:ignore] = [%r{^\.git.*}] unless @opts.key?(:ignore)
+        @opts[:ignore] << %r{^\.entangler.*}
 
         validate_opts
         logger.info('Starting executor')

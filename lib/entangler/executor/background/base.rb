@@ -86,7 +86,7 @@ module Entangler
           listener.pause
           yield
           @listener_pauses[idx] = false
-          listener.unpause if @listener_pauses.none?
+          listener.start if @listener_pauses.none?
         end
       end
     end
