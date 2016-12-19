@@ -24,7 +24,11 @@ Usage:
     options[:port] = port
   end
 
-  opts.on_tail('-v', '--version', 'Show version number') do |_v|
+  opts.on('-v', '--verbose', 'Log Debug lines') do
+    options[:verbose] = true
+  end
+
+  opts.on_tail('--version', 'Show version number') do
     puts Entangler::VERSION
     exit
   end
@@ -91,5 +95,7 @@ if options[:ignore]
     end
   end
 end
+
+opts[:verbose] = options[:verbose]
 
 Entangler.run(base_dir, opts)

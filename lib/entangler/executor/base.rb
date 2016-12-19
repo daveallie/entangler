@@ -51,7 +51,11 @@ module Entangler
 
       def logger
         FileUtils.mkdir_p log_dir
-        @logger ||= Logger.new(File.join(log_dir, 'entangler.log'))
+        @logger ||= begin
+          l = Logger.new(File.join(log_dir, 'entangler.log'))
+          l.level = @opts[:verbose] ? Logger::DEBUG : Logger::INFO
+          l
+        end
       end
 
       def log_dir
