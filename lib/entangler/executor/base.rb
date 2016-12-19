@@ -2,12 +2,11 @@ require 'logger'
 require 'fileutils'
 require 'thread'
 require_relative 'background/base'
-require_relative 'processing/base'
 
 module Entangler
   module Executor
     class Base
-      include Entangler::Executor::Background::Base, Entangler::Executor::Processing::Base
+      include Entangler::Executor::Background::Base
 
       attr_reader :base_dir
 
@@ -15,6 +14,7 @@ module Entangler
         @base_dir = File.realpath(File.expand_path(base_dir))
         @notify_sleep = 0
         @exported_at = 0
+        @listener_pauses = [false, false]
         @opts = opts
         @opts[:ignore] = [%r{^/\.git.*}] unless @opts.key?(:ignore)
         @opts[:ignore] << %r{^/\.entangler.*}
@@ -32,13 +32,12 @@ module Entangler
       end
 
       def run
-        start_notify_daemon
-        start_local_io
+        start_listener
         start_remote_io
-        start_local_consumer
-        logger.debug("NOTIFY PID: #{@notify_daemon_pid}")
         Signal.trap('INT') { kill_off_threads }
         wait_for_threads
+      ensure
+        stop_listener
       end
 
       protected
