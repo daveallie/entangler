@@ -15,7 +15,7 @@ module Entangler
         @recently_received_paths = []
         @listener_pauses = [false, false]
         @opts = opts
-        @opts[:ignore] = [/^\.git(?:\/[^\/]+)*/] unless @opts.key?(:ignore)
+        @opts[:ignore] = [%r{^\.git(?:/[^/]+)*}] unless @opts.key?(:ignore)
         @opts[:ignore] << /^\.entangler.*/
 
         validate_opts
