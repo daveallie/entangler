@@ -27,15 +27,15 @@ module Entangler
       end
 
       def validate_local_opts
-        @opts[:remote_base_dir] = File.realpath(File.expand_path(@opts[:remote_base_dir]))
-        if @opts[:remote_base_dir] == base_dir
-          raise Entangler::ValidationError, "Destination directory can't be the same as the base directory"
-        end
         unless File.exist?(@opts[:remote_base_dir])
           raise Entangler::ValidationError, "Destination directory doesn't exist"
         end
-        return if File.directory?(@opts[:remote_base_dir])
-        raise Entangler::ValidationError, 'Destination directory is a file'
+        unless File.directory?(@opts[:remote_base_dir])
+          raise Entangler::ValidationError, 'Destination directory is a file'
+        end
+        @opts[:remote_base_dir] = File.realpath(File.expand_path(@opts[:remote_base_dir]))
+        return unless @opts[:remote_base_dir] == base_dir
+        raise Entangler::ValidationError, "Destination directory can't be the same as the base directory"
       end
 
       def validate_remote_opts

@@ -1,10 +1,29 @@
 require 'spec_helper'
 require 'fileutils'
 
-describe Entangler::Executor do
+describe Entangler::Executor::Base do
+  describe 'validaton' do
+    it "is invalid if the base directory doesn't exist" do
+      with_temp_dir do |dir|
+        expect { Entangler::Executor::Base.new(File.join(dir, 'asdf')) }.to(
+          raise_error(Entangler::ValidationError, "Base directory doesn't exist")
+        )
+      end
+    end
+
+    it 'is invalid if the base directory is a file' do
+      with_temp_dir do |dir|
+        File.write(File.join(dir, 'asdf'), 'w') { |f| f.write('asdf') }
+        expect { Entangler::Executor::Base.new(File.join(dir, 'asdf')) }.to(
+          raise_error(Entangler::ValidationError, 'Base directory is a file')
+        )
+      end
+    end
+  end
+
   describe 'listen ignore generation' do
     it 'should prevent listen from notifying' do
-      Dir.mktmpdir do |dir|
+      with_temp_dir do |dir|
         f1 = File.join(dir, 'test', 'subfolder')
         f2 = File.join(dir, 'test2', 'subfolder')
         FileUtils.mkdir_p([f1, f2])
