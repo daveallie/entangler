@@ -1,4 +1,4 @@
-require 'rspec'
+require 'spec_helper'
 require 'fileutils'
 
 describe Entangler::Executor do
