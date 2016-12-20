@@ -90,7 +90,6 @@ end
 
 if options[:ignore]
   opts[:ignore] = options[:ignore].map do |opt|
-
     if opt.start_with?('"') && opt.end_with?('"') || opt.start_with?("'") && opt.end_with?("'")
       opt = opt[1..-2]
     end
