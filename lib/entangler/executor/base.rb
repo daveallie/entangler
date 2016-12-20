@@ -11,6 +11,7 @@ module Entangler
       attr_reader :base_dir
 
       def initialize(base_dir, opts = {})
+        validate_base_dir(base_dir)
         @base_dir = File.realpath(File.expand_path(base_dir))
         @recently_received_paths = []
         @listener_pauses = [false, false]
@@ -42,9 +43,7 @@ module Entangler
 
       protected
 
-      def validate_opts
-        raise "Base directory doesn't exist" unless Dir.exist?(base_dir)
-      end
+      def validate_opts; end
 
       def send_to_remote(msg = {})
         Marshal.dump(msg, @remote_writer)
@@ -61,6 +60,11 @@ module Entangler
 
       def log_dir
         File.join(base_dir, '.entangler', 'log')
+      end
+
+      def validate_base_dir(base_dir)
+        raise Entangler::ValidationError, "Base directory doesn't exist" unless File.exist?(base_dir)
+        raise Entangler::ValidationError, 'Base directory is a file' unless File.directory?(base_dir)
       end
     end
   end

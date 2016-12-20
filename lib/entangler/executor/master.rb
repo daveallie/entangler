@@ -28,23 +28,29 @@ module Entangler
 
       def validate_local_opts
         @opts[:remote_base_dir] = File.realpath(File.expand_path(@opts[:remote_base_dir]))
-        raise "Destination directory can't be the same as the base directory" if @opts[:remote_base_dir] == base_dir
-        raise "Destination directory doesn't exist" unless Dir.exist?(@opts[:remote_base_dir])
+        if @opts[:remote_base_dir] == base_dir
+          raise Entangler::ValidationError, "Destination directory can't be the same as the base directory"
+        end
+        unless File.exist?(@opts[:remote_base_dir])
+          raise Entangler::ValidationError, "Destination directory doesn't exist"
+        end
+        return if File.directory?(@opts[:remote_base_dir])
+        raise Entangler::ValidationError, 'Destination directory is a file'
       end
 
       def validate_remote_opts
         keys = @opts.keys
-        raise 'Missing remote base dir' unless keys.include?(:remote_base_dir)
-        raise 'Missing remote user' unless keys.include?(:remote_user)
-        raise 'Missing remote host' unless keys.include?(:remote_host)
+        raise Entangler::ValidationError, 'Missing remote base dir' unless keys.include?(:remote_base_dir)
+        raise Entangler::ValidationError, 'Missing remote user' unless keys.include?(:remote_user)
+        raise Entangler::ValidationError, 'Missing remote host' unless keys.include?(:remote_host)
         validate_remote_base_dir
         validate_remote_entangler_version
       end
 
       def validate_remote_base_dir
         res = `#{generate_ssh_command("[[ -d '#{@opts[:remote_base_dir]}' ]] && echo 'ok' || echo 'missing'")}`
-        raise 'Cannot connect to remote' if res.empty?
-        raise 'Remote base dir invalid' unless res.strip == 'ok'
+        raise Entangler::ValidationError, 'Cannot connect to remote' if res.empty?
+        raise Entangler::ValidationError, 'Remote base dir invalid' unless res.strip == 'ok'
       end
 
       def validate_remote_entangler_version
@@ -53,8 +59,9 @@ module Entangler
         remote_version = Gem::Version.new(res.strip)
         local_version = Gem::Version.new(Entangler::VERSION)
         return unless major_version_mismatch?(local_version, remote_version)
-        raise 'Entangler version too far apart, please update either local or remote Entangler.' \
+        msg = 'Entangler version too far apart, please update either local or remote Entangler.' \
               " Local version is #{local_version} and remote version is #{remote_version}."
+        raise Entangler::VersionMismatchError, msg
       end
 
       def major_version_mismatch?(version1, version2)
