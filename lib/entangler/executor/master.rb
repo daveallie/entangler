@@ -59,7 +59,8 @@ module Entangler
 
       def major_version_mismatch?(version1, version2)
         version1.segments[0] != version2.segments[0] ||
-          (version1.segments[0].zero? && version1 != version2)
+          (version1.segments[0].zero? && version1 != version2) ||
+          ((version1.prerelease? || version2.prerelease?) && version1 != version2)
       end
 
       def perform_initial_rsync
