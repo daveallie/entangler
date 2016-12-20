@@ -15,11 +15,10 @@ module Entangler
         @recently_received_paths = []
         @listener_pauses = [false, false]
         @opts = opts
-        @opts[:ignore] = [%r{^\.git(?:/[^/]+)*}] unless @opts.key?(:ignore)
+        @opts[:ignore] = [%r{^\.git(?:/[^/]+)*$}] unless @opts.key?(:ignore)
         @opts[:ignore] << /^\.entangler.*/
 
         validate_opts
-        logger.info('Starting executor')
       end
 
       def generate_abs_path(rel_path)
@@ -31,12 +30,14 @@ module Entangler
       end
 
       def run
+        logger.info('Starting executor')
         start_listener
         start_remote_io
         Signal.trap('INT') { kill_off_threads }
         wait_for_threads
       ensure
         stop_listener
+        logger.info('Stopping entangler')
       end
 
       protected
