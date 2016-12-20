@@ -41,18 +41,20 @@ module Entangler
 
         def listener
           @listener ||= begin
-            listen_ignores = @opts[:ignore].map do |regexp|
-              if regexp.inspect.start_with? '/^'
-                "/^#{base_dir}/#{regexp.inspect[2..-1]}".to_regexp(detect: true)
-              else
-                regexp
-              end
-            end
-
             Listen::Listener.new(base_dir, ignore!: listen_ignores) do |modified, added, removed|
               process_local_changes(generate_entangled_files(added, :create) +
                                         generate_entangled_files(modified, :update) +
                                         generate_entangled_files(removed, :delete))
+            end
+          end
+        end
+
+        def listen_ignores
+          @opts[:ignore].map do |regexp|
+            if regexp.inspect.start_with? '/^'
+              "/^#{base_dir}/#{regexp.inspect[2..-1]}".to_regexp(detect: true)
+            else
+              regexp
             end
           end
         end
