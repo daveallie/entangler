@@ -89,7 +89,7 @@ if options[:ignore]
   opts[:ignore] = options[:ignore].map do |opt|
     if ToRegexp::String.literal? opt
       source, *rest = opt.as_regexp(detect: true)
-      ::Regexp.new "^#{source}", *rest
+      ::Regexp.new "^#{source}(?:/[^/]+)*", *rest
     else
       opt.to_regexp(detect: true)
     end
