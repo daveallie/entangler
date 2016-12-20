@@ -50,7 +50,16 @@ module Entangler
       def validate_remote_entangler_version
         return unless @opts[:remote_mode]
         res = `#{generate_ssh_command('source ~/.rvm/environments/default && entangler --version')}`
-        raise 'Remote Entangler version too outdated' unless Gem::Version.new('1') <= Gem::Version.new(res.strip)
+        remote_version = Gem::Version.new(res.strip)
+        local_version = Gem::Version.new(Entangler::VERSION)
+        return unless major_version_mismatch?(local_version, remote_version)
+        raise 'Entangler version too far apart, please update either local or remote Entangler.' \
+              " Local version is #{local_version} and remote version is #{remote_version}."
+      end
+
+      def major_version_mismatch?(version1, version2)
+        version1.segments[0] != version2.segments[0] ||
+          (version1.segments[0].zero? && version1 != version2)
       end
 
       def perform_initial_rsync
