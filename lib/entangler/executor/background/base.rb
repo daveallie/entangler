@@ -1,5 +1,6 @@
 require 'listen'
 require 'entangler/entangled_file'
+require 'to_regexp'
 
 module Entangler
   module Executor
@@ -40,13 +41,19 @@ module Entangler
 
         def listener
           @listener ||= begin
-            l = Listen::Listener.new(base_dir) do |modified, added, removed|
+            listen_ignores = @opts[:ignore].map do |regexp|
+              if regexp.inspect.start_with? '/^'
+                "/^#{base_dir}/#{regexp.inspect[2..-1]}".to_regexp(detect: true)
+              else
+                regexp
+              end
+            end
+
+            Listen::Listener.new(base_dir, ignore!: listen_ignores) do |modified, added, removed|
               process_local_changes(generate_entangled_files(added, :create) +
                                         generate_entangled_files(modified, :update) +
                                         generate_entangled_files(removed, :delete))
             end
-            l.ignore!(@opts[:ignore])
-            l
           end
         end
 
