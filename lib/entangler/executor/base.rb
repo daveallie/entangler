@@ -31,14 +31,14 @@ module Entangler
       end
 
       def run
-        logger.info('Starting executor')
+        logger.info("Entangler v#{Entangler::VERSION}")
         start_listener
         start_remote_io
         Signal.trap('INT') { kill_off_threads }
         wait_for_threads
       ensure
         stop_listener
-        logger.info('Stopping entangler')
+        logger.info('Stopping Entangler')
       end
 
       protected

@@ -9,7 +9,7 @@ module Entangler
         protected
 
         def start_listener
-          logger.info('starting listener')
+          logger.info('Starting - Local file watcher')
           listener.start
         end
 
@@ -18,7 +18,7 @@ module Entangler
         end
 
         def start_remote_io
-          logger.info('starting remote IO')
+          logger.info('Starting - Remote communications')
           @remote_io_thread = Thread.new do
             with_kill_threads_rescue do
               loop do
@@ -63,9 +63,9 @@ module Entangler
           with_listener_pause(0) do
             changes = remove_recently_changed_files(changes)
             if changes.any?
-              logger.info("PROCESSING #{changes.length} local changes")
-              logger.debug(changes.map(&:path).join("\n"))
-              with_log_time("PROCESSED #{changes.length} local changes") do
+              logger.info("Processing - #{changes.length} local changes")
+              logger.debug("File List:\n#{changes.map(&:path).join("\n")}")
+              with_log_time("Completed - #{changes.length} local changes") do
                 send_to_remote(changes)
               end
             end
@@ -75,9 +75,9 @@ module Entangler
         def process_remote_changes(changes)
           with_listener_pause(1) do
             return if changes.nil?
-            logger.info("PROCESSING #{changes.length} remote changes")
-            logger.debug(changes.map(&:path).join("\n"))
-            with_log_time("PROCESSED #{changes.length} remote changes") do
+            logger.info("Processing - #{changes.length} remote changes")
+            logger.debug("File List:\n#{changes.map(&:path).join("\n")}")
+            with_log_time("Completed - #{changes.length} remote changes") do
               changes.each(&:process)
               update_recently_received_paths(changes)
             end
