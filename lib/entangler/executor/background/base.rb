@@ -1,5 +1,6 @@
 require 'listen'
 require 'entangler/entangled_file'
+require 'benchmark'
 
 module Entangler
   module Executor
@@ -64,7 +65,9 @@ module Entangler
             if changes.any?
               logger.info("PROCESSING #{changes.length} local changes")
               logger.debug(changes.map(&:path).join("\n"))
-              send_to_remote(changes)
+              with_log_time("PROCESSED #{changes.length} local changes") do
+                send_to_remote(changes)
+              end
             end
           end
         end
@@ -74,8 +77,10 @@ module Entangler
             return if changes.nil?
             logger.info("PROCESSING #{changes.length} remote changes")
             logger.debug(changes.map(&:path).join("\n"))
-            changes.each(&:process)
-            update_recently_received_paths(changes)
+            with_log_time("PROCESSED #{changes.length} remote changes") do
+              changes.each(&:process)
+              update_recently_received_paths(changes)
+            end
           end
         end
 
@@ -104,6 +109,15 @@ module Entangler
           yield
           @listener_pauses[idx] = false
           listener.start if @listener_pauses.none?
+        end
+
+        def with_log_time(msg)
+          res = nil
+          time = Benchmark.realtime do
+            res = yield
+          end
+          logger.debug("#{msg} in #{time * 1000}ms")
+          res
         end
       end
     end
