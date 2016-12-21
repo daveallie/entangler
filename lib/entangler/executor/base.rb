@@ -35,6 +35,7 @@ module Entangler
         start_listener
         start_remote_io
         Signal.trap('INT') { kill_off_threads }
+        logger.info('Ready!')
         wait_for_threads
       ensure
         stop_listener
