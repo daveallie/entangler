@@ -1,3 +1,5 @@
+require 'open3'
+
 module Entangler
   module Executor
     module Background
@@ -6,7 +8,6 @@ module Entangler
 
         def start_remote_slave
           logger.info('Starting - Entangler on remote')
-          require 'open3'
           ignore_opts = @opts[:ignore].map { |regexp| "-i '#{regexp.inspect}'" }.join(' ')
           entangler_cmd = "entangler slave #{@opts[:remote_base_dir]} #{ignore_opts}"
           ssh_cmd = generate_ssh_command("source ~/.rvm/environments/default && #{entangler_cmd}")
