@@ -55,7 +55,15 @@ module Entangler
         @logger ||= begin
           l = Logger.new(File.join(log_dir, 'entangler.log'))
           l.level = @opts[:verbose] ? Logger::DEBUG : Logger::INFO
+          l.formatter = logger_formatter
           l
+        end
+      end
+
+      def logger_formatter
+        proc do |severity, datetime, _, msg|
+          date_format = datetime.strftime('%Y-%m-%d %H:%M:%S')
+          "[#{date_format}] #{severity.rjust(5)}: #{msg}\n"
         end
       end
 
