@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Dave Allie']
   spec.email         = ['dave@daveallie.com']
 
-  spec.summary       = 'Two way file syncer using platform native notify and rdiff syncing.'
-  spec.description   = 'Two way file syncer using platform native notify and rdiff syncing.'
+  spec.summary       = 'Two way file syncer using platform native notify.'
+  spec.description   = 'Two way file syncer using platform native notify.'
   spec.homepage      = 'https://github.com/daveallie/entangler'
   spec.license       = 'MIT'
 
@@ -23,6 +23,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'rubocop', '~> 0.46'
-  spec.add_dependency 'lib_ruby_diff', '~> 0.1'
+  spec.add_dependency 'listen', '~> 3.1'
   spec.add_dependency 'to_regexp', '~> 0.2'
 end

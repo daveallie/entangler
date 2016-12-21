@@ -2,25 +2,24 @@ require 'logger'
 require 'fileutils'
 require 'thread'
 require_relative 'background/base'
-require_relative 'processing/base'
 
 module Entangler
   module Executor
     class Base
-      include Entangler::Executor::Background::Base, Entangler::Executor::Processing::Base
+      include Entangler::Executor::Background::Base
 
       attr_reader :base_dir
 
       def initialize(base_dir, opts = {})
+        validate_base_dir(base_dir)
         @base_dir = File.realpath(File.expand_path(base_dir))
-        @notify_sleep = 0
-        @exported_at = 0
+        @recently_received_paths = []
+        @listener_pauses = [false, false]
         @opts = opts
-        @opts[:ignore] = [%r{^/\.git.*}] unless @opts.key?(:ignore)
-        @opts[:ignore] << %r{^/\.entangler.*}
+        @opts[:ignore] = [%r{^\.git(?:/[^/]+)*$}] unless @opts.key?(:ignore)
+        @opts[:ignore] << /^\.entangler.*/
 
         validate_opts
-        logger.info('Starting executor')
       end
 
       def generate_abs_path(rel_path)
@@ -32,20 +31,19 @@ module Entangler
       end
 
       def run
-        start_notify_daemon
-        start_local_io
+        logger.info("Entangler v#{Entangler::VERSION}")
+        start_listener
         start_remote_io
-        start_local_consumer
-        logger.debug("NOTIFY PID: #{@notify_daemon_pid}")
         Signal.trap('INT') { kill_off_threads }
         wait_for_threads
+      ensure
+        stop_listener
+        logger.info('Stopping Entangler')
       end
 
       protected
 
-      def validate_opts
-        raise "Base directory doesn't exist" unless Dir.exist?(base_dir)
-      end
+      def validate_opts; end
 
       def send_to_remote(msg = {})
         Marshal.dump(msg, @remote_writer)
@@ -53,11 +51,20 @@ module Entangler
 
       def logger
         FileUtils.mkdir_p log_dir
-        @logger ||= Logger.new(File.join(log_dir, 'entangler.log'))
+        @logger ||= begin
+          l = Logger.new(File.join(log_dir, 'entangler.log'))
+          l.level = @opts[:verbose] ? Logger::DEBUG : Logger::INFO
+          l
+        end
       end
 
       def log_dir
         File.join(base_dir, '.entangler', 'log')
+      end
+
+      def validate_base_dir(base_dir)
+        raise Entangler::ValidationError, "Base directory doesn't exist" unless File.exist?(base_dir)
+        raise Entangler::ValidationError, 'Base directory is a file' unless File.directory?(base_dir)
       end
     end
   end

@@ -1,4 +1,5 @@
 require_relative 'entangler/version'
+require_relative 'entangler/errors'
 require_relative 'entangler/entangled_file'
 
 module Entangler

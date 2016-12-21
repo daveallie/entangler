@@ -5,6 +5,7 @@ module Entangler
         protected
 
         def start_remote_slave
+          logger.info('Starting - Entangler on remote')
           require 'open3'
           ignore_opts = @opts[:ignore].map { |regexp| "-i '#{regexp.inspect}'" }.join(' ')
           entangler_cmd = "entangler slave #{@opts[:remote_base_dir]} #{ignore_opts}"

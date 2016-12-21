@@ -14,8 +14,8 @@ Usage:
   opts.separator ''
   opts.separator 'Options:'
 
-  opts.on('-i', "--ignore '/.git'", "Ignore folder when syncing, string is regex if surrounded by '/'",
-          "All folders should be relative to the base sync directory, but should start with a '/'.") do |ignore|
+  opts.on('-i', "--ignore '.git'", "Ignore path when syncing, string is regex if surrounded by '/'",
+          'All paths should be relative to the base sync directory.') do |ignore|
     options[:ignore] ||= []
     options[:ignore] << ignore
   end
@@ -24,7 +24,11 @@ Usage:
     options[:port] = port
   end
 
-  opts.on_tail('-v', '--version', 'Show version number') do |_v|
+  opts.on('-v', '--verbose', 'Log Debug lines') do
+    options[:verbose] = true
+  end
+
+  opts.on_tail('--version', 'Show version number') do
     puts Entangler::VERSION
     exit
   end
@@ -50,7 +54,10 @@ end
 if mode == 'master'
   remote_information = ARGV.shift
 
-  raise 'Missing destination information' unless remote_information
+  unless remote_information
+    puts 'Missing destination information'
+    exit 1
+  end
 
   user = host = path = error = nil
   remote_mode = false
@@ -83,8 +90,19 @@ end
 
 if options[:ignore]
   opts[:ignore] = options[:ignore].map do |opt|
-    opt.to_regexp(detect: true)
+    if opt.start_with?('"') && opt.end_with?('"') || opt.start_with?("'") && opt.end_with?("'")
+      opt = opt[1..-2]
+    end
+
+    if ToRegexp::String.literal? opt
+      source, *rest = opt.as_regexp(detect: true)
+      ::Regexp.new "^#{source}(?:/[^/]+)*$", *rest
+    else
+      opt.to_regexp(detect: true)
+    end
   end
 end
+
+opts[:verbose] = options[:verbose]
 
 Entangler.run(base_dir, opts)
