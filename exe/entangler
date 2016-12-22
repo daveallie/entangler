@@ -105,4 +105,9 @@ end
 
 opts[:verbose] = options[:verbose]
 
-Entangler.run(base_dir, opts)
+begin
+  Entangler.run(base_dir, opts)
+rescue Entangler::EntanglerError => e
+  puts e.message
+  exit 1
+end
