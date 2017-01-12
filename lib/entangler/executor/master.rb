@@ -16,6 +16,10 @@ module Entangler
 
       private
 
+      def log_outputs
+        [Entangler::Logger.log_file_path(base_dir), STDOUT]
+      end
+
       def validate_opts
         super
         if @opts[:remote_mode]
