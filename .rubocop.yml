@@ -7,3 +7,10 @@ Metrics/LineLength:
 
 Style/Documentation:
   Enabled: false
+
+Security/MarshalLoad:
+  Enabled: false
+
+Metrics/BlockLength:
+  Exclude:
+  - 'spec/**/*'
