@@ -22,7 +22,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'bundler', '~> 1.12'
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
-  spec.add_development_dependency 'rubocop', '~> 0.47'
-  spec.add_dependency 'listen', '~> 3.1'
-  spec.add_dependency 'to_regexp', '~> 0.2'
+  spec.add_development_dependency 'rubocop', '~> 0.47.0'
+  spec.add_development_dependency 'parser', '~> 2.3.0'
+  spec.add_dependency 'listen', '~> 3.1.0'
+  spec.add_dependency 'to_regexp', '~> 0.2.0'
 end
