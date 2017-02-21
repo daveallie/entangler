@@ -15,7 +15,7 @@ matrix:
     rvm: 2.2.6
   allow_failures:
     - rvm: ruby-head
-before_install:
-  - gem cleanup bundler && gem install bundler -v 1.13.7
 install:
+  - gem cleanup bundler
+  - gem install bundler -v 1.13.7
   - bundle install --jobs=3 --retry=3
