@@ -40,7 +40,7 @@ Usage:
 end.parse!
 
 mode = ARGV.shift
-unless mode && %w(master slave).include?(mode)
+unless mode && %w[master slave].include?(mode)
   puts "Mode unknown, please read help:\nentangler -h"
   exit 1
 end
