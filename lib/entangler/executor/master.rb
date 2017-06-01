@@ -20,7 +20,8 @@ module Entangler
       private
 
       def log_outputs
-        [Entangler::Logger.log_file_path(base_dir), STDOUT]
+        outs = [Entangler::Logger.log_file_path(base_dir)]
+        outs << STDOUT unless @opts[:quiet]
       end
 
       def perform_initial_rsync
