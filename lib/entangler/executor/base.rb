@@ -2,11 +2,13 @@ require 'logger'
 require 'fileutils'
 require 'thread'
 require_relative 'background/base'
+require_relative 'validation/base'
 
 module Entangler
   module Executor
     class Base
       include Entangler::Executor::Background::Base
+      include Entangler::Executor::Validation::Base
 
       attr_reader :base_dir
 
@@ -45,8 +47,6 @@ module Entangler
 
       protected
 
-      def validate_opts; end
-
       def send_to_remote(msg = {})
         Marshal.dump(msg, @remote_writer)
       end
@@ -57,11 +57,6 @@ module Entangler
 
       def log_outputs
         [Entangler::Logger.log_file_path(base_dir)]
-      end
-
-      def validate_base_dir(base_dir)
-        raise Entangler::ValidationError, "Base directory doesn't exist" unless File.exist?(base_dir)
-        raise Entangler::ValidationError, 'Base directory is a file' unless File.directory?(base_dir)
       end
     end
   end
