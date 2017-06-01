@@ -1,4 +1,5 @@
 require_relative 'background/master'
+require 'tempfile'
 
 module Entangler
   module Executor
@@ -76,8 +77,10 @@ module Entangler
 
       def perform_initial_rsync
         logger.info 'Running initial sync'
-        IO.popen(rsync_cmd_string).each do |line|
-          logger.debug line.chomp
+        with_temp_rsync_ignores do |file_path|
+          IO.popen(rsync_cmd_string(file_path)).each do |line|
+            logger.debug line.chomp
+          end
         end
         logger.debug 'Initial sync complete'
       end
@@ -111,12 +114,19 @@ module Entangler
         "#{@opts[:remote_user]}@#{@opts[:remote_host]}"
       end
 
-      def rsync_cmd_string
-        exclude_args = find_rsync_ignore_folders.map { |path| "--exclude #{path}" }.join(' ')
+      def with_temp_rsync_ignores
+        t = Tempfile.new('rsync_ignores')
+        t.puts(find_rsync_ignore_folders.join("\n"))
+        t.close
+        yield t.path
+        t.unlink
+      end
+
+      def rsync_cmd_string(rsync_ignores_file_path)
         remote_path = @opts[:remote_mode] ? "#{@opts[:remote_user]}@#{@opts[:remote_host]}:" : ''
         remote_path += "#{@opts[:remote_base_dir]}/"
 
-        cmd = "rsync -azv #{exclude_args}"
+        cmd = "rsync -azv --exclude-from #{rsync_ignores_file_path}"
         cmd += " -e \"ssh -p #{@opts[:remote_port]}\"" if @opts[:remote_mode]
         cmd + " --delete #{base_dir}/ #{remote_path}"
       end
