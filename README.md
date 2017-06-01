@@ -18,7 +18,7 @@ $ entangler master /some/base/path user@remote:/some/remote/path
 
 ```
 $ entangler -h
-Entangler v1.0.2
+Entangler v1.1.0
 
 Usage:
    entangler master <base_dir> <remote_user>@<remote_host>:<remote_base_dir> [options]
@@ -30,6 +30,7 @@ Options:
     -p, --port PORT                  Overwrite the SSH port (usually 22)
                                      (doesn't do anything in slave mode)
     -v, --verbose                    Log Debug lines
+    -q, --quiet                      Don't log to stdout in master process
         --version                    Show version number
     -h, --help                       Show this message
 ```
