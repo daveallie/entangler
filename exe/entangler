@@ -3,19 +3,19 @@ require 'entangler'
 require 'optparse'
 require 'to_regexp'
 
-options = {}
-def bool_opt(opts, key, *args)
+def bool_opt(options, opts, key, *args)
   opts.on(*args) do
     options[key] = true
   end
 end
 
-def value_opt(opts, key, *args)
+def value_opt(options, opts, key, *args)
   opts.on(*args) do |val|
     options[key] = val
   end
 end
 
+options = {}
 OptionParser.new do |opts|
   opts.banner = %(Entangler v#{Entangler::VERSION}
 
@@ -32,10 +32,10 @@ Usage:
     options[:ignore] << ignore
   end
 
-  value_opt(opts, :port, '-p', '--port PORT', 'Overwrite the SSH port (usually 22)',
+  value_opt(options, opts, :port, '-p', '--port PORT', 'Overwrite the SSH port (usually 22)',
             "(doesn't do anything in slave mode)")
-  bool_opt(opts, :verbose, '-v', '--verbose', 'Log Debug lines')
-  bool_opt(opts, :quiet, '-q', '--quiet', "Don't log to stdout in master process")
+  bool_opt(options, opts, :verbose, '-v', '--verbose', 'Log Debug lines')
+  bool_opt(options, opts, :quiet, '-q', '--quiet', "Don't log to stdout in master process")
 
   opts.on_tail('--version', 'Show version number') do
     puts Entangler::VERSION
