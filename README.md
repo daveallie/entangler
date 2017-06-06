@@ -18,7 +18,7 @@ $ entangler master /some/base/path user@remote:/some/remote/path
 
 ```
 $ entangler -h
-Entangler v1.1.0
+Entangler v1.1.1
 
 Usage:
    entangler master <base_dir> <remote_user>@<remote_host>:<remote_base_dir> [options]
@@ -37,8 +37,8 @@ Options:
 
 ### Ignoring files and folders
 
-If you specify a string, instead of a regex, it will match any path starting with that string, i.e. `-i '.git'` will ignore the `.git` 
-folder and all its sub-directories. If you want to just ignore the the `.git` sub-directories but not the content in the git folder, you'll 
+If you specify a string, instead of a regex, it will match any path starting with that string, i.e. `-i '.git'` will ignore the `.git`
+folder and all its sub-directories. If you want to just ignore the the `.git` sub-directories but not the content in the git folder, you'll
 have to use regex. `-i '/^\.git(?:\/[^\/]+){2,}$/'` will match all sub-directories of `.git/`, but not the files in `.git`.
 
 You can specify multiple `-i` or `--ignore` flags to ignore multiple paths.
