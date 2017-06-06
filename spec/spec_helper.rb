@@ -5,6 +5,7 @@ require 'entangler'
 require 'entangler/executor/base'
 require 'entangler/executor/master'
 require 'entangler/executor/slave'
+require 'tmpdir'
 
 def with_temp_dirs(num, dirs = [], &block)
   if num.zero?
