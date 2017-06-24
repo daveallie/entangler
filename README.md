@@ -1,4 +1,5 @@
-# Entangler
+<p align="center" style="width: 50px;"><img src="https://vignette1.wikia.nocookie.net/pokemon/images/e/ef/114Tangela_Dream.png/revision/latest/scale-to-width-down/185?cb=20141203054028"/></p>
+<h1 align="center">Entangler</h1>
 
 [![Build Status](https://travis-ci.org/daveallie/entangler.svg?branch=master)](https://travis-ci.org/daveallie/entangler)
 
