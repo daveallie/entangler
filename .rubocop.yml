@@ -1,7 +1,7 @@
 AllCops:
   DisplayCopNames: true
   ExtraDetails: true
-  TargetRubyVersion: 2.2
+  TargetRubyVersion: 2.3
 
 Metrics/LineLength:
   Max: 120
@@ -15,3 +15,12 @@ Security/MarshalLoad:
 Metrics/BlockLength:
   Exclude:
   - 'spec/**/*'
+
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true

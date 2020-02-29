@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'helpers'
 require_relative 'background/master'
 require_relative 'validation/master'

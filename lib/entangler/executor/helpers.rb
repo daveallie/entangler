@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Entangler
   module Helper
     def self.with_temp_file(name: 'tmp_file', contents: nil)

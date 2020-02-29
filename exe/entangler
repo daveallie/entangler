@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'entangler'
 require 'optparse'
 require 'to_regexp'
@@ -99,9 +101,7 @@ end
 
 if options[:ignore]
   opts[:ignore] = options[:ignore].map do |opt|
-    if opt.start_with?('"') && opt.end_with?('"') || opt.start_with?("'") && opt.end_with?("'")
-      opt = opt[1..-2]
-    end
+    opt = opt[1..-2] if opt.start_with?('"') && opt.end_with?('"') || opt.start_with?("'") && opt.end_with?("'")
 
     if ToRegexp::String.literal? opt
       source, *rest = opt.as_regexp(detect: true)

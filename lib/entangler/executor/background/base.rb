@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'listen'
 require 'entangler/entangled_file'
 require 'benchmark'
@@ -75,6 +77,7 @@ module Entangler
         def process_remote_changes(changes)
           with_listener_pause(1) do
             return if changes.nil?
+
             logger.info("Processing - #{changes.length} remote changes")
             logger.debug("File List:\n#{changes.map(&:path).join("\n")}")
             with_log_time("Completed - #{changes.length} remote changes") do
@@ -97,9 +100,9 @@ module Entangler
 
         def with_kill_threads_rescue
           yield
-        rescue => e
-          $stderr.puts e.message
-          $stderr.puts e.backtrace.join("\n")
+        rescue StandardError => e
+          warn e.message
+          warn e.backtrace.join("\n")
           kill_off_threads
         end
 

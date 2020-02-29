@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'open3'
 
 module Entangler
@@ -21,7 +23,7 @@ module Entangler
           super
           begin
             Process.wait @remote_thread[:pid]
-          rescue
+          rescue StandardError
             nil
           end
         end

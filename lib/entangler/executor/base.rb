@@ -1,6 +1,7 @@
+# frozen_string_literal: true
+
 require 'logger'
 require 'fileutils'
-require 'thread'
 require_relative 'background/base'
 require_relative 'validation/base'
 
