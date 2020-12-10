@@ -13,7 +13,7 @@ module Entangler
       File.join(base_dir, '.entangler', 'log', log_file_name)
     end
 
-    def initialize(outputs, verbose = false)
+    def initialize(outputs, verbose: false)
       @loggers = Array(outputs).map do |output|
         logger = ::Logger.new(output)
 

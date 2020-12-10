@@ -5,13 +5,13 @@ module Entangler
     class Slave < Base
       def initialize(base_dir, opts = {})
         super(base_dir, opts)
-        STDIN.binmode
-        STDOUT.binmode
-        STDIN.sync = true
-        STDOUT.sync = true
+        $stdin.binmode
+        $stdout.binmode
+        $stdin.sync = true
+        $stdout.sync = true
 
-        @remote_reader = STDIN
-        @remote_writer = STDOUT
+        @remote_reader = $stdin
+        @remote_writer = $stdout
         $stderr.reopen(File.join(Entangler::Logger.log_file_path(base_dir, 'entangler.err')), 'w')
       end
     end

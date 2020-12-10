@@ -7,7 +7,7 @@ describe Entangler::Executor::Base do
   describe 'validaton' do
     it "is invalid if the base directory doesn't exist" do
       with_temp_dir do |dir|
-        expect { Entangler::Executor::Base.new(File.join(dir, 'asdf')) }.to(
+        expect { described_class.new(File.join(dir, 'asdf')) }.to(
           raise_error(Entangler::ValidationError, "Base directory doesn't exist")
         )
       end
@@ -16,7 +16,7 @@ describe Entangler::Executor::Base do
     it 'is invalid if the base directory is a file' do
       with_temp_dir do |dir|
         File.write(File.join(dir, 'asdf'), 'w') { |f| f.write('asdf') }
-        expect { Entangler::Executor::Base.new(File.join(dir, 'asdf')) }.to(
+        expect { described_class.new(File.join(dir, 'asdf')) }.to(
           raise_error(Entangler::ValidationError, 'Base directory is a file')
         )
       end
@@ -24,7 +24,7 @@ describe Entangler::Executor::Base do
   end
 
   describe 'listen ignore generation' do
-    it 'should prevent listen from notifying' do
+    it 'prevents listen from notifying' do # rubocop:disable RSpec/MultipleExpectations
       with_temp_dir do |dir|
         f1 = File.join(dir, 'test', 'subfolder')
         f2 = File.join(dir, 'test2', 'subfolder')
@@ -58,25 +58,25 @@ describe Entangler::Executor::Base do
   end
 
   describe 'strip base path' do
-    it 'should leave the leading slash' do
-      executor = Entangler::Executor::Base.new('.')
+    it 'leaves the leading slash' do
+      executor = described_class.new('.')
       expect(executor.strip_base_path(File.absolute_path('./test/path'))).to eq '/test/path'
     end
 
-    it 'should return the same string when prepending then stripping' do
-      executor = Entangler::Executor::Base.new('.')
+    it 'returns the same string when prepending then stripping' do
+      executor = described_class.new('.')
       expect(executor.strip_base_path(executor.generate_abs_path('/test/path'))).to eq '/test/path'
     end
   end
 
   describe 'generate abs path' do
-    it 'should leave generate the abs path' do
-      executor = Entangler::Executor::Base.new('.')
+    it 'leaves generate the abs path' do
+      executor = described_class.new('.')
       expect(executor.generate_abs_path('/test/path')).to eq File.absolute_path('./test/path')
     end
 
-    it 'should return the same string when stripping then prepending' do
-      executor = Entangler::Executor::Base.new('.')
+    it 'returns the same string when stripping then prepending' do
+      executor = described_class.new('.')
       path = File.absolute_path('./test/path')
       expect(executor.generate_abs_path(executor.strip_base_path(path))).to eq path
     end

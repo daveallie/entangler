@@ -20,11 +20,14 @@ Gem::Specification.new do |spec|
   spec.bindir        = 'exe'
   spec.executables   = ['entangler']
   spec.require_paths = ['lib']
+  spec.required_ruby_version = '>= 2.5'
 
   spec.add_development_dependency 'bundler', '>= 2.1'
-  spec.add_development_dependency 'rake', '>= 12.3.3'
+  spec.add_development_dependency 'rake', '>= 13.0.1'
   spec.add_development_dependency 'rspec', '>= 3.9'
-  spec.add_development_dependency 'rubocop', '>= 0.80'
-  spec.add_dependency 'listen', '~> 3.1'
-  spec.add_dependency 'to_regexp', '~> 0.2.0'
+  spec.add_development_dependency 'rubocop', '~> 1.6'
+  spec.add_development_dependency 'rubocop-rake', '~> 0.5.1'
+  spec.add_development_dependency 'rubocop-rspec', '~> 2.0'
+  spec.add_dependency 'listen', '~> 3.3'
+  spec.add_dependency 'to_regexp', '~> 0.2.1'
 end

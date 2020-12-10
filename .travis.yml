@@ -4,20 +4,14 @@ os:
   - linux
   - osx
 rvm:
-  - 2.4
   - 2.5
   - 2.6
   - 2.7
   - ruby-head
 matrix:
-  include:
-  - os: osx
-    rvm: 2.2.5
-  - os: linux
-    rvm: 2.2.6
   allow_failures:
     - rvm: ruby-head
 install:
   - gem cleanup bundler
-  - gem install bundler -v 1.13.7
+  - gem install bundler -v 2.1.4
   - bundle install --jobs=3 --retry=3
