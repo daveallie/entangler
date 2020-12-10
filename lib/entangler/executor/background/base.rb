@@ -58,6 +58,7 @@ module Entangler
         def remove_recently_changed_files(entangled_files)
           @recently_received_paths.select! { |_, time| Time.now.to_f < time + 0.5 }
           paths = @recently_received_paths.map(&:first)
+          logger.debug("Skipping paths #{paths.join(", ")} as they have changed recently") if paths.any?
           entangled_files.reject { |ef| paths.include?(ef.path) }
         end
 
