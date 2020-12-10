@@ -111,8 +111,9 @@ module Entangler
           @listener_pauses[idx] = true
           listener.pause
           yield
-          @listener_pauses[idx] = false
-          listener.start if @listener_pauses.none?
+          ensure
+            @listener_pauses[idx] = false
+            listener.start if @listener_pauses.none?
         end
 
         def with_log_time(msg)
