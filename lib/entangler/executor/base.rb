@@ -53,7 +53,7 @@ module Entangler
       end
 
       def logger
-        @logger ||= Entangler::Logger.new(log_outputs, @opts[:verbose])
+        @logger ||= Entangler::Logger.new(log_outputs, verbose: @opts[:verbose])
       end
 
       def log_outputs
