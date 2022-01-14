@@ -28,6 +28,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop', '~> 1.6'
   spec.add_development_dependency 'rubocop-rake', '~> 0.5.1'
   spec.add_development_dependency 'rubocop-rspec', '~> 2.0'
-  spec.add_dependency 'listen', '~> 3.3'
+  spec.add_dependency 'listen', '~> 3.7'
   spec.add_dependency 'to_regexp', '~> 0.2.1'
 end
