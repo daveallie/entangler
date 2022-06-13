@@ -19,7 +19,7 @@ $ entangler master /some/base/path user@remote:/some/remote/path
 
 ```
 $ entangler -h
-Entangler v1.2.2
+Entangler v1.2.3
 
 Usage:
    entangler master <base_dir> <remote_user>@<remote_host>:<remote_base_dir> [options]
