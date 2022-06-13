@@ -50,12 +50,18 @@ module Entangler
           return unless @opts[:remote_mode]
 
           res = `#{generate_ssh_command('source ~/.rvm/environments/default && entangler --version')}`
+          if res.empty?
+            msg = 'Entangler is not installed on the remote server.' \
+                  ' Install Entangler on the remote server (SSH in, then `gem install entangler`), then try again.'
+            raise Entangler::NotInstalledOnRemoteError, msg
+          end
+
           remote_version = Gem::Version.new(res.strip)
           local_version = Gem::Version.new(Entangler::VERSION)
           return unless major_version_mismatch?(local_version, remote_version)
 
           msg = 'Entangler version too far apart, please update either local or remote Entangler.' \
-              " Local version is #{local_version} and remote version is #{remote_version}."
+                " Local version is #{local_version} and remote version is #{remote_version}."
           raise Entangler::VersionMismatchError, msg
         end
 
