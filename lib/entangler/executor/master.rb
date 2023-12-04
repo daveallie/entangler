@@ -59,7 +59,7 @@ module Entangler
 
       def generate_ssh_command(cmd, source_rvm: false)
         prefixed_cmd =
-          if source_rvm
+          if source_rvm && !@opts[:no_rvm]
             "([[ -f ~/.rvm/environments/default ]] && source ~/.rvm/environments/default || true) && #{cmd}"
           else
             cmd
