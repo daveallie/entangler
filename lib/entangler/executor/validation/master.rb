@@ -49,7 +49,7 @@ module Entangler
         def validate_remote_entangler_version
           return unless @opts[:remote_mode]
 
-          res = `#{generate_ssh_command('source ~/.rvm/environments/default && entangler --version')}`
+          res = `#{generate_ssh_command('(source ~/.rvm/environments/default || echo) && entangler --version')}`
           if res.empty?
             msg = 'Entangler is not installed on the remote server.' \
                   ' Install Entangler on the remote server (SSH in, then `gem install entangler`), then try again.'
