@@ -12,7 +12,7 @@ module Entangler
           logger.info('Starting - Entangler on remote')
           ignore_opts = @opts[:ignore].map { |regexp| "-i '#{regexp.inspect}'" }.join(' ')
           entangler_cmd = "entangler slave #{@opts[:remote_base_dir]} #{ignore_opts}"
-          ssh_cmd = generate_ssh_command("source ~/.rvm/environments/default && #{entangler_cmd}")
+          ssh_cmd = generate_ssh_command(entangler_cmd, source_rvm: true)
           full_cmd = @opts[:remote_mode] ? ssh_cmd : entangler_cmd
 
           @remote_writer, @remote_reader, remote_err, @remote_thread = Open3.popen3(full_cmd)
