@@ -57,8 +57,15 @@ module Entangler
         end.compact.uniq
       end
 
-      def generate_ssh_command(cmd)
-        "ssh -q #{remote_hostname} -p #{@opts[:remote_port]} -C \"#{cmd}\""
+      def generate_ssh_command(cmd, source_rvm: false)
+        prefixed_cmd =
+          if source_rvm && !@opts[:no_rvm]
+            "([[ -f ~/.rvm/environments/default ]] && source ~/.rvm/environments/default || true) && #{cmd}"
+          else
+            cmd
+          end
+
+        "ssh -q #{remote_hostname} -p #{@opts[:remote_port]} -C \"#{prefixed_cmd}\""
       end
 
       def remote_hostname
