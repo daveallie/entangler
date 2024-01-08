@@ -18,6 +18,10 @@ module Entangler
       Entangler.executor.generate_abs_path(@path)
     end
 
+    def not_a_directory?
+      !File.directory?(full_path)
+    end
+
     def file_exists?
       File.exist?(full_path)
     end
@@ -56,7 +60,7 @@ module Entangler
     end
 
     def marshal_dump
-      if file_exists? && (action == :create || action == :update)
+      if file_exists? && not_a_directory? && (action == :create || action == :update)
         @desired_modtime = File.mtime(full_path).to_i
         @contents = File.read(full_path)
       end
