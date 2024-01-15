@@ -42,12 +42,12 @@ module Entangler
         private
 
         def listener
-          @listener ||= begin
-            Listen::Listener.new(base_dir, ignore!: @opts[:ignore]) do |modified, added, removed|
-              process_local_changes(generate_entangled_files(added, :create) +
-                                        generate_entangled_files(modified, :update) +
-                                        generate_entangled_files(removed, :delete))
-            end
+          @listener ||= Listen::Listener.new(base_dir,
+                                             ignore!: @opts[:ignore],
+                                             force_polling: @opts[:force_polling]) do |modified, added, removed|
+            process_local_changes(generate_entangled_files(added, :create) +
+                                  generate_entangled_files(modified, :update) +
+                                  generate_entangled_files(removed, :delete))
           end
         end
 

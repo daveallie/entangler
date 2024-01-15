@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe Entangler::Executor::Master do
-  describe 'validaton' do
+  describe 'validation' do
     it "is invalid if the remote directory doesn't exist" do
       with_temp_dir do |dir|
         expect { described_class.new(dir, remote_base_dir: File.join(dir, 'asdf')) }.to(

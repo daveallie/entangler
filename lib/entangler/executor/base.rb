@@ -11,6 +11,9 @@ module Entangler
       include Entangler::Executor::Background::Base
       include Entangler::Executor::Validation::Base
 
+      GIT_IGNORE_REGEX = %r{^\.git(?:/[^/]+)*$}.freeze
+      ENTANGLER_IGNORE_REGEX = /^\.entangler.*/.freeze
+
       attr_reader :base_dir
 
       def initialize(base_dir, opts = {})
@@ -19,8 +22,9 @@ module Entangler
         @recently_received_paths = []
         @listener_pauses = [false, false]
         @opts = opts
-        @opts[:ignore] = [%r{^\.git(?:/[^/]+)*$}] unless @opts.key?(:ignore)
-        @opts[:ignore] << /^\.entangler.*/
+        @opts[:ignore] = [GIT_IGNORE_REGEX] unless @opts.key?(:ignore)
+        @opts[:ignore] << ENTANGLER_IGNORE_REGEX
+        @opts[:force_polling] ||= false
 
         validate_opts
         Entangler::Logger.create_log_dir(base_dir)
@@ -55,6 +59,8 @@ module Entangler
       def logger
         @logger ||= Entangler::Logger.new(log_outputs, verbose: @opts[:verbose])
       end
+
+      private
 
       def log_outputs
         [Entangler::Logger.log_file_path(base_dir)]

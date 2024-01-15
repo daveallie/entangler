@@ -18,12 +18,15 @@ def value_opt(options, opts, key, *args)
 end
 
 options = {}
+# rubocop:disable Metrics/BlockLength
 OptionParser.new do |opts|
-  opts.banner = %(Entangler v#{Entangler::VERSION}
+  opts.banner = <<~BANNER
+    Entangler v#{Entangler::VERSION}
 
-Usage:
-   entangler master <base_dir> <remote_user>@<remote_host>:<remote_base_dir> [options]
-   entangler master <base_dir> <other_synced_base_dir> [options])
+    Usage:
+      entangler master <base_dir> <remote_user>@<remote_host>:<remote_base_dir> [options]
+      entangler master <base_dir> <other_synced_base_dir> [options]
+  BANNER
 
   opts.separator ''
   opts.separator 'Options:'
@@ -36,8 +39,14 @@ Usage:
 
   value_opt(options, opts, :port, '-p', '--port PORT', 'Overwrite the SSH port (usually 22)',
             "(doesn't do anything in slave mode)")
+
+  bool_opt(options, opts, :force_polling, '--force-polling',
+           'Forces the use of the listen polling adapter (works cross-platform, generally slower)')
+
   bool_opt(options, opts, :no_rvm, '--no-rvm', 'Skip attempting to load RVM on remote')
+
   bool_opt(options, opts, :verbose, '-v', '--verbose', 'Log Debug lines')
+
   bool_opt(options, opts, :quiet, '-q', '--quiet', "Don't log to stdout in master process")
 
   opts.on_tail('--version', 'Show version number') do
@@ -50,6 +59,7 @@ Usage:
     exit
   end
 end.parse!
+# rubocop:enable Metrics/BlockLength
 
 mode = ARGV.shift
 unless mode && %w[master slave].include?(mode)
@@ -102,17 +112,18 @@ end
 
 if options[:ignore]
   opts[:ignore] = options[:ignore].map do |opt|
-    opt = opt[1..-2] if opt.start_with?('"') && opt.end_with?('"') || opt.start_with?("'") && opt.end_with?("'")
+    opt = opt[1..-2] if (opt.start_with?('"') && opt.end_with?('"')) || (opt.start_with?("'") && opt.end_with?("'"))
 
     if ToRegexp::String.literal? opt
       source, *rest = opt.as_regexp(detect: true)
-      ::Regexp.new "^#{source}(?:/[^/]+)*$", *rest
+      Regexp.new "^#{source}(?:/[^/]+)*$", *rest
     else
       opt.to_regexp(detect: true)
     end
   end
 end
 
+opts[:force_polling] = options[:force_polling]
 opts[:no_rvm] = options[:no_rvm]
 opts[:quiet] = options[:quiet]
 opts[:verbose] = options[:verbose]
