@@ -30,4 +30,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop-rspec', '~> 2.0'
   spec.add_dependency 'listen', '~> 3.7'
   spec.add_dependency 'to_regexp', '~> 0.2.1'
+  spec.metadata['rubygems_mfa_required'] = 'true'
 end
