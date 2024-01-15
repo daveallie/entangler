@@ -4,7 +4,14 @@ require 'spec_helper'
 require 'fileutils'
 
 describe Entangler::Executor::Base do
-  describe 'validaton' do
+  let(:default_ignores) do
+    [
+      described_class::GIT_IGNORE_REGEX,
+      described_class::ENTANGLER_IGNORE_REGEX
+    ]
+  end
+
+  describe 'validation' do
     it "is invalid if the base directory doesn't exist" do
       with_temp_dir do |dir|
         expect { described_class.new(File.join(dir, 'asdf')) }.to(
@@ -30,7 +37,7 @@ describe Entangler::Executor::Base do
         f2 = File.join(dir, 'test2', 'subfolder')
         FileUtils.mkdir_p([f1, f2])
         source, *rest = 'test'.as_regexp(detect: true)
-        regexp = ::Regexp.new "^#{source}(?:/[^/]+)*$", *rest
+        regexp = Regexp.new "^#{source}(?:/[^/]+)*$", *rest
 
         changes = []
 
@@ -53,6 +60,38 @@ describe Entangler::Executor::Base do
 
         expect(changes.length).to eq 1
         expect(changes.first).to end_with File.join(f2, 'file')
+      end
+    end
+  end
+
+  describe 'listen force polling' do
+    before do
+      allow(Listen::Listener).to receive(:new).and_return(
+        instance_double(Listen::Listener, start: nil, stop: nil)
+      )
+    end
+
+    context 'when force polling is set' do
+      it 'configures listen with the polling adapter enabled' do
+        with_temp_dir do |dir|
+          executor = described_class.new(dir, force_polling: true)
+          executor.run
+          expect(Listen::Listener).to have_received(:new).with(executor.base_dir,
+                                                               ignore!: default_ignores,
+                                                               force_polling: true)
+        end
+      end
+    end
+
+    context 'when force polling is not set' do
+      it 'configures listen with the polling adapter disabled' do
+        with_temp_dir do |dir|
+          executor = described_class.new(dir)
+          executor.run
+          expect(Listen::Listener).to have_received(:new).with(executor.base_dir,
+                                                               ignore!: default_ignores,
+                                                               force_polling: false)
+        end
       end
     end
   end
