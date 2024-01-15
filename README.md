@@ -30,6 +30,8 @@ Options:
                                      All paths should be relative to the base sync directory.
     -p, --port PORT                  Overwrite the SSH port (usually 22)
                                      (doesn't do anything in slave mode)
+        --force-polling              Forces the use of the listen polling adapter
+                                     (works cross-platform, generally slower, doesn't do anything in slave mode)
         --no-rvm                     Skip attempting to load RVM on remote
     -v, --verbose                    Log Debug lines
     -q, --quiet                      Don't log to stdout in master process
