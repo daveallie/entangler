@@ -47,7 +47,7 @@ module Entangler
 
     def write_contents
       delete_file if file_exists? && File.directory?(full_path)
-      File.open(full_path, 'w') { |f| f.write(contents) }
+      File.write(full_path, contents)
       File.utime(File.atime(full_path), desired_modtime, full_path)
     end
 

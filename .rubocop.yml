@@ -38,3 +38,9 @@ Style/HashTransformValues:
 
 RSpec/ExampleLength:
   Enabled: false
+
+Gemspec/DevelopmentDependencies:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
