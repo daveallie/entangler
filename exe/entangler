@@ -32,7 +32,7 @@ OptionParser.new do |opts|
   opts.separator 'Options:'
 
   opts.on('-i', "--ignore '.git'", "Ignore path when syncing, string is regex if surrounded by '/'",
-          'All paths should be relative to the base sync directory.') do |ignore|
+          'All paths should be relative to the base sync directory') do |ignore|
     options[:ignore] ||= []
     options[:ignore] << ignore
   end
@@ -41,7 +41,8 @@ OptionParser.new do |opts|
             "(doesn't do anything in slave mode)")
 
   bool_opt(options, opts, :force_polling, '--force-polling',
-           'Forces the use of the listen polling adapter (works cross-platform, generally slower)')
+           'Forces the use of the listen polling adapter',
+           "(works cross-platform, generally slower, doesn't do anything in slave mode)")
 
   bool_opt(options, opts, :no_rvm, '--no-rvm', 'Skip attempting to load RVM on remote')
 
