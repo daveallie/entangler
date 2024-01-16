@@ -15,7 +15,7 @@ module Entangler
 
     def initialize(outputs, verbose: false)
       @loggers = Array(outputs).map do |output|
-        logger = ::Logger.new(output, 1, 10485760) # 10.megabytes.to_i
+        logger = ::Logger.new(output, 1, 10_485_760) # 10.megabytes.to_i
 
         logger.level = verbose ? ::Logger::DEBUG : ::Logger::INFO
         logger.formatter = proc do |severity, datetime, _, msg|
