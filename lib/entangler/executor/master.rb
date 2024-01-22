@@ -65,7 +65,9 @@ module Entangler
             cmd
           end
 
-        "ssh -q #{remote_hostname} -p #{@opts[:remote_port]} -C \"#{prefixed_cmd}\""
+        ssh = "ssh -q #{remote_hostname} -p #{@opts[:remote_port]}"
+        ssh += " -F #{@opts[:config]}" if @opts[:config]
+        ssh + " -C \"#{prefixed_cmd}\""
       end
 
       def remote_hostname
@@ -83,7 +85,10 @@ module Entangler
         remote_path += "#{@opts[:remote_base_dir]}/"
 
         cmd = "rsync -azv --exclude-from #{rsync_ignores_file_path}"
-        cmd += " -e \"ssh -p #{@opts[:remote_port]}\"" if @opts[:remote_mode]
+        if @opts[:remote_mode]
+          config = @opts[:config] ? "-F #{@opts[:config]}" : ''
+          cmd += " -e \"ssh -p #{@opts[:remote_port]} #{config}\""
+        end
         cmd + " --delete #{base_dir}/ #{remote_path}"
       end
     end
