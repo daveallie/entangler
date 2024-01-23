@@ -40,6 +40,9 @@ OptionParser.new do |opts|
   value_opt(options, opts, :port, '-p', '--port PORT', 'Overwrite the SSH port (usually 22)',
             "(doesn't do anything in slave mode)")
 
+  value_opt(options, opts, :config, '-c', '--config PATH', 'Use a custom SSH config (usually $HOME/.ssh/config)',
+            "(doesn't do anything in slave mode)")
+
   bool_opt(options, opts, :force_polling, '--force-polling',
            'Forces the use of the listen polling adapter',
            "(works cross-platform, generally slower, doesn't do anything in slave mode)")
@@ -124,6 +127,7 @@ if options[:ignore]
   end
 end
 
+opts[:config] = options[:config]
 opts[:force_polling] = options[:force_polling]
 opts[:no_rvm] = options[:no_rvm]
 opts[:quiet] = options[:quiet]
