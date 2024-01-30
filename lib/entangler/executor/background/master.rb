@@ -11,7 +11,8 @@ module Entangler
         def start_remote_slave
           logger.info('Starting - Entangler on remote')
           ignore_opts = @opts[:ignore].map { |regexp| "-i '#{regexp.inspect}'" }.join(' ')
-          entangler_cmd = "entangler slave #{@opts[:remote_base_dir]} #{ignore_opts}"
+          entangler_cmd = +"entangler slave #{@opts[:remote_base_dir]} #{ignore_opts}"
+          entangler_cmd << " --verbose" if @opts[:verbose]
           ssh_cmd = generate_ssh_command(entangler_cmd, source_rvm: true)
           full_cmd = @opts[:remote_mode] ? ssh_cmd : entangler_cmd
 
