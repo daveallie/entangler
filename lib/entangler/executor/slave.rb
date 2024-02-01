@@ -12,7 +12,7 @@ module Entangler
 
         @remote_reader = $stdin
         @remote_writer = $stdout
-        $stderr.reopen(File.join(Entangler::Logger.log_file_path(base_dir, 'entangler.err')), 'w')
+        $stderr.reopen(File.join(Entangler::Logger.log_file_path(base_dir, 'entangler.err')), 'a')
       end
     end
   end
